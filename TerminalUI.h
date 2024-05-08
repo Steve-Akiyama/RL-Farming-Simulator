@@ -11,7 +11,7 @@ public:
 private:
     PlantFarm plantFarm; // Instance of PlantFarm
     void displayMenu(); // Method to display menu options
-    void processInput(); // Method to process user input
+    bool processInput(); // Method to process user input
 };
 
 #endif // TERMINAL_UI_H

@@ -10,9 +10,13 @@ TerminalUI::TerminalUI() {
 void TerminalUI::start() {
     std::cout << "Welcome to the Plant Farm Simulator!\n\n";
 
+    //While the UI should run
     while (true) {
-        displayMenu();
-        processInput();
+        displayMenu(); //Display menu options
+
+        if (processInput()) {
+            return; //If processInput returns exit code, return
+        }
     }
 }
 
@@ -23,21 +27,29 @@ void TerminalUI::displayMenu() {
     std::cout << "Choose an option: ";
 }
 
-void TerminalUI::processInput() {
+bool TerminalUI::processInput() {
     std::string input;
     std::getline(std::cin, input);
 
+    //Exits if the user desires to
     if (input == "exit") {
         std::cout << "Exiting...\n";
         exit(0);
     }
 
+    //Recieves water and nitrogen inputs
     std::istringstream iss(input);
     int water, nitro;
     if (!(iss >> water >> nitro)) {
         std::cout << "Invalid input. Please enter integers for water and nitrogen values.\n";
-        return;
+        return 0;
     }
 
-    plantFarm.transition(water, nitro);
+    //Returns the exit code and prints a message when time is complete
+    if (plantFarm.transition(water, nitro)) {
+        std::cout << "\n---- Plant growth complete! ----\n\n";
+        return 1;
+    }
+
+    return 0;
 }

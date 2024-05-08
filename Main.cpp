@@ -29,7 +29,8 @@ void Main::processInput() {
 
     // Clear input buffer
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
+    
+    // Handles choice inputs for terminal UI, exit, error handling
     switch (choice) {
         case 1: {
             TerminalUI terminalUI;

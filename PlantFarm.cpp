@@ -59,6 +59,17 @@ void PlantFarm::printStatus() {
 */
 bool PlantFarm::transition(int waterInput, int nitroInput) {
     
+    //Checks for correct inputs, and exits otherwise
+    if (waterInput > 4 || waterInput < 0 ||
+        nitroInput > 4 || nitroInput < 0) {
+            std::cout << "\nPlease enter values within the proper range.";
+            return 0;
+        }
+
+
+    //Increments the time
+    _time += 1;
+
     //Updates water and nitrogen variables
     waterChange(waterInput);
     nitroChange(nitroInput);
@@ -73,14 +84,11 @@ bool PlantFarm::transition(int waterInput, int nitroInput) {
     //Prints the stats
     printStatus();
 
-    //Increments the time
-    _time += 1;
-
     //Returns the end signifier if the experiment is complete
     if (_time == TIME_FINAL) {
-        return 0;
-    } else {
         return 1;
+    } else {
+        return 0;
     }
 
 }
