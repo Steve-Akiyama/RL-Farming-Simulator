@@ -19,7 +19,8 @@ void Main::start() {
 void Main::displayMenu() {
     std::cout << "Menu:\n";
     std::cout << "1. Run Plant Farm Simulator\n";
-    std::cout << "2. Exit\n";
+    std::cout << "2. Auto-Run with values = 2\n";
+    std::cout << "3. Exit\n";
     std::cout << "Choose an option: ";
 }
 
@@ -37,7 +38,14 @@ void Main::processInput() {
             terminalUI.start();
             break;
         }
-        case 2:
+        case 2: {
+            PlantFarm plantfarm;
+            while (!plantfarm.transition(2, 2)) {
+                continue;
+            }
+            break;
+        }
+        case 3:
             std::cout << "Exiting...\n";
             exit(0);
         default:

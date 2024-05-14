@@ -49,6 +49,7 @@ void PlantFarm::printStatus() {
     "\nStatus:   " << getStatus() <<
     "\nGrowth:   " << getGrowth() <<
     "\nYield:    " << getYield() <<
+    "\nReward:   " << reward() <<
     "\n";
 }
 
@@ -104,7 +105,8 @@ void PlantFarm::waterChange(int waterInput) {
     _water -= WATER_DECAY;
 
     //Creates a random number to generate transition changes
-    int random_number = rand() % 100;
+    int random_number = rand() % 100 + 1;
+    //std::cout << "\n\nRandom Number: " << random_number << "\n\n";
 
     //Determines if the transition function should give a water change
     if (random_number < (100 * WATER_CHANCE)) {
@@ -135,7 +137,6 @@ void PlantFarm::nitroChange(int nitroInput) {
 
     //Creates a random number to generate transition changes
     int random_number = rand() % 100;
-    std::cout << random_number;
 
     //Determines if the transition function should give a nitrogen change
     if (random_number < (100 * NITRO_CHANCE)) {
@@ -158,23 +159,41 @@ void PlantFarm::nitroChange(int nitroInput) {
  * Updates the status to reflect the current water and nitrogen levels
 */
 void PlantFarm::statusUpdate() {
-    //If the water is out of range, reduces status
-    if (_water == 0 || _water == WATER_MAX) {
-        _status -= 2;
-    } else {
-        //Otherwise, increases status slightly
-        _status += 1;
+    
+    //Initializes status to STATUS_START on each cycle
+    _status = STATUS_START;
+
+    //Updates the status dependant on the water
+    switch (_water) {
+        case 0: _status -= 2; break;
+        case 1: _status += 0; break;
+        case 2: _status += 1; break;
+        case 3: _status += 0; break;
+        case 4: _status -= 2; break;
     }
 
-    //If the water is out of range, reduces status
-    if (_nitro == 4) {
-        _status -= 1; //Too much nitrogen reduces growth
-    } else if (_nitro == 1 && _status > 3) {
-        _status -= 1; //Too little nitrogen reduces growth
-    } else if (_nitro == 0 && _status > 3) {
-        _status = 3; //Far too little nitrogen sets growth to 0
-    } else {
-        _status += 1; //In any other case, slightly increase status
+    //Updates the status dependant on the nitrogen
+    switch (_nitro) {
+        case 0: //If the plant has no nitrogen, it cannot grow (But also is not damaged)
+            if (_status > 3) {
+                _status = 3;
+            }
+            break;
+        case 1: //If the plant has too little nitrogen, it only can grow a little
+            if (_status > 3) {
+                _status -= 1; //Still grows if and only if status was max beforehand
+            }
+            break;
+        case 2: //If the plant has the right amount of nitrogen, lets the plant reach max growth IF it is healthy
+            if (_status >= 3) {
+                _status += 1;
+            }
+            break;
+        case 3: //If the plant has a little too much nitrogen, it's OK, but no affect
+            break;
+        case 4: //If the plant has way too much nitrogen, it can hurt the plant!
+            _status -= 1;
+            break;
     }
 
     //Catch out of bounds statuses
@@ -192,19 +211,20 @@ void PlantFarm::statusUpdate() {
 */
 void PlantFarm::growthUpdate() {
     switch (_status) {
-        case 1: _growth -= 2;
-        case 2: _growth -= 1;
-        case 4: _growth += 1;
-        case 5: _growth += 2;
-
-        if (_growth < 0) {
-            _growth = 0;
-        } else if (_growth > GROWTH_MAX) {
-            _growth = GROWTH_MAX;
-        }
-
-        return;
+        case 1: _growth -= 2; break;
+        case 2: _growth -= 1; break;
+        case 3: _growth += 0; break;
+        case 4: _growth += 1; break;
+        case 5: _growth += 2; break;
     }
+
+    if (_growth < 0) {
+        _growth = 0;
+    } else if (_growth > GROWTH_MAX) {
+        _growth = GROWTH_MAX;
+    }
+
+    return;
 }
 
 /**
@@ -221,4 +241,32 @@ void PlantFarm::yieldUpdate() {
             _yield = 2;
         }
     }
+}
+
+
+/**
+ * Returns a reward based on the status and yield of the plant.
+*/
+int PlantFarm::reward() {
+
+    //Initializes reward (return value) to 0
+    int reward = 0;
+
+    //Adds reward based on status
+    switch (_status) {
+        case 1: reward += -100; break;  //Huge negative reward for a hugely negative status.
+        case 2: reward += -10; break;   //Negative reward for a negative status.
+        case 3: reward += 0; break;     //Here solely for readability, does nothing if the status will not grow or harm the plant.
+        case 4: reward += 5; break;     //Small positive reward for a small positive effect.
+        case 5: reward += 10; break;    //Decent positive reward for a positive effect
+    }
+
+    //Adds reward based on yield
+    switch (_yield) {
+        case 0: reward += 0; break;    //No yield, no reward.
+        case 1: reward += 25; break;   //Regular yield, regular reward.
+        case 2: reward += 50; break;   //Large yield, large reward.
+    }
+
+    return reward;
 }
