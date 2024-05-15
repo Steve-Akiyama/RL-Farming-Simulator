@@ -37,7 +37,7 @@ class PlantFarm {
     int _time;      //[0, 10] where 0 is the starting value and 10 is the end of the simulation
     int _water;     //[0, WATER_MAX] where 0 is the lowest possible value and WATER_MAX is the highest possible value
     int _nitro;     //[0, NITRO_MAX] where 0 is the lowest possible value and NITRO_MAX is the highest possible value
-    int _status;    //[1, 5] where 1 is heavy plant decay and 5 is plant flourishing. Growth requires a status of 4 or 5, decay requires a status of 1 or 2.
+    int _status;    //[0, 5] where 1 is heavy plant decay and 5 is plant flourishing. Growth requires a status of 4 or 5, decay requires a status of 1 or 2.
     int _growth;    //[0, 4] where 0 is a seedling and 4 is fully grown.
     int _yield;     //[0, 2] where 0 is no yield and 2 is max yield. Yield > 0 requires a fully grown plant, and max yield requires max status.
 

@@ -78,17 +78,20 @@ bool PlantFarm::transition(int waterInput, int nitroInput) {
     //Updates the status to reflect the new nitrogen/water levels
     statusUpdate();
 
-    //Updates the growth and yield
+    //Updates the growth
     growthUpdate();
-    yieldUpdate();
-
-    //Prints the stats
-    printStatus();
 
     //Returns the end signifier if the experiment is complete
     if (_time == TIME_FINAL) {
+        yieldUpdate(); //Produce crops
+        printStatus(); //Prints the stats
+        return 1;
+    } else if (_status == 0) {
+        std::cout << "\nOh no! The plant died.\n";
+        printStatus(); //Prints the stats
         return 1;
     } else {
+        printStatus(); //Prints the stats
         return 0;
     }
 
@@ -175,9 +178,7 @@ void PlantFarm::statusUpdate() {
     //Updates the status dependant on the nitrogen
     switch (_nitro) {
         case 0: //If the plant has no nitrogen, it cannot grow (But also is not damaged)
-            if (_status > 3) {
-                _status = 3;
-            }
+            _status -= 1;
             break;
         case 1: //If the plant has too little nitrogen, it only can grow a little
             if (_status > 3) {
@@ -189,7 +190,7 @@ void PlantFarm::statusUpdate() {
                 _status += 1;
             }
             break;
-        case 3: //If the plant has a little too much nitrogen, it's OK, but no affect
+        case 3: //If the plant has a little too much nitrogen, it's OK, but no effect
             break;
         case 4: //If the plant has way too much nitrogen, it can hurt the plant!
             _status -= 1;
@@ -254,6 +255,7 @@ int PlantFarm::reward() {
 
     //Adds reward based on status
     switch (_status) {
+        case 0: reward += -1000; break; //Plant died :c
         case 1: reward += -100; break;  //Huge negative reward for a hugely negative status.
         case 2: reward += -10; break;   //Negative reward for a negative status.
         case 3: reward += 0; break;     //Here solely for readability, does nothing if the status will not grow or harm the plant.
