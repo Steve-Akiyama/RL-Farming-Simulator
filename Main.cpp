@@ -10,9 +10,27 @@ Main::Main()
     // Constructor - no initialization needed
 }
 
+void Main::printAsciiTitle() {
+    // I promise it doesn't look this weird when you run it
+    cout << "______ _             _    ______                   " << endl;
+    cout << "| ___ \\ |           | |   |  ___|                  " << endl;
+    cout << "| |_/ / | __ _ _ __ | |_  | |_ __ _ _ __ _ __ ___  " << endl;
+    cout << "|  __/| |/ _` | '_ \\| __| |  _/ _` | '__| '_ ` _ \\ " << endl;
+    cout << "| |   | | (_| | | | | |_  | || (_| | |  | | | | | |" << endl;
+    cout << "\\_|   |_|\\__,_|_| |_|\\__| \\_| \\__,_|_|  |_| |_| |_|" << endl;
+    cout << endl;
+    cout << " _____ _                 _       _ " << endl;
+    cout << "/  ___(_)               | |     | |" << endl;
+    cout << "\\ `--. _ _ __ ___  _   _| | __ _| |_ ___  _ __" << endl;
+    cout << " `--. \\ | '_ ` _ \\| | | | |/ _` | __/ _ \\| '__|" << endl;
+    cout << "/\\__/ / | | | | | | |_| | | (_| | || (_) | |" << endl;
+    cout << "\\____/|_|_| |_| |_|\\__,_|_|\\__,_|\\__\\___/|_|" << endl;
+    return;
+}
+
 void Main::start()
 {
-    cout << "Welcome to the Plant Farm Simulator!\n\n";
+    printAsciiTitle();
 
     while (true)
     {
@@ -23,11 +41,11 @@ void Main::start()
 
 void Main::displayMenu()
 {
-    cout << "Menu:\n";
-    cout << "1. Run Plant Farm Simulator with manual inputs\n";
-    cout << "2. Auto-Run Plant Farm Simulator with auto-input values: \"2 2\"\n";
-    cout << "3. Run Plant Farm Simulator with Value Iteration\n";
-    cout << "4. Exit\n";
+    cout << "Menu:" << endl;
+    cout << "1. Run Plant Farm Simulator with manual inputs" << endl;
+    cout << "2. Auto-Run Plant Farm Simulator with auto-input values: \"2 2\"" << endl;
+    cout << "3. Run Plant Farm Simulator with Value Iteration" << endl;
+    cout << "4. Exit" << endl;
     cout << "Choose an option: ";
 }
 
@@ -40,6 +58,10 @@ void Main::processInput()
 
     // Clear input buffer
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    // Print separator
+    cout << "--------------------" << endl
+         << endl;
 
     // Handles choice inputs for terminal UI, exit, error handling
     switch (choice)
@@ -57,7 +79,7 @@ void Main::processInput()
         int nitro_input = 2;
         while (!plantfarm.transition(water_input, nitro_input))
         {
-            cout << "<Water> <Nitrogen> Input: " << water_input << " " << nitro_input << "\n"; // Format for showing the user what the
+            cout << "<Water> <Nitrogen> Input: " << water_input << " " << nitro_input << endl; // Format for showing the user what the
             continue;
         }
         break;
@@ -65,21 +87,23 @@ void Main::processInput()
     case 3:
     {
         ValueIteration valueiter;
-        cout << "Running Value Iteration...\n";
-    
+        cout << "Running Value Iteration..." << endl;
+
         break;
     }
     case 4:
     {
-        cout << "Exiting...\n";
+        cout << "Exiting..." << endl
+             << endl;
         exit(0);
     }
     default:
     {
-        cout << "\nInvalid choice. Please try again.\n";
+        cout << "Invalid choice. Please try again." << endl;
         break;
     }
     }
+    cout << endl << "--------------------" << endl;
 }
 
 int main()

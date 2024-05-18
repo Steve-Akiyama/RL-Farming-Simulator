@@ -7,6 +7,7 @@ public:
     void start(); // Method to start the program
 
 private:
+    void printAsciiTitle(); // Method to print the title in ASCII art
     void displayMenu(); // Method to display menu options
     void processInput(); // Method to process user input
 };
