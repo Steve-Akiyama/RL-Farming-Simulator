@@ -1,8 +1,9 @@
 all: PlantFarmApp
 
 PlantFarmApp:
-	g++ -o PlantFarmApp TerminalUI.cpp PlantFarm.cpp Main.cpp
+	g++ -o PlantFarmApp *.cpp
 	./PlantFarmApp
 
 clean:
-	rm PlantFarmApp.exe
+	rm *.exe
+	

@@ -3,57 +3,87 @@
 #include <iostream>
 #include <limits>
 
-Main::Main() {
+using namespace std;
+
+Main::Main()
+{
     // Constructor - no initialization needed
 }
 
-void Main::start() {
-    std::cout << "Welcome to the Plant Farm Simulator!\n\n";
+void Main::start()
+{
+    cout << "Welcome to the Plant Farm Simulator!\n\n";
 
-    while (true) {
+    while (true)
+    {
         displayMenu();
         processInput();
     }
 }
 
-void Main::displayMenu() {
-    std::cout << "Menu:\n";
-    std::cout << "1. Run Plant Farm Simulator\n";
-    std::cout << "2. Auto-Run with values = 2\n";
-    std::cout << "3. Exit\n";
-    std::cout << "Choose an option: ";
+void Main::displayMenu()
+{
+    cout << "Menu:\n";
+    cout << "1. Run Plant Farm Simulator with manual inputs\n";
+    cout << "2. Auto-Run Plant Farm Simulator with auto-input values: \"2 2\"\n";
+    cout << "3. Run Plant Farm Simulator with Value Iteration\n";
+    cout << "4. Exit\n";
+    cout << "Choose an option: ";
 }
 
-void Main::processInput() {
-    int choice;
-    std::cin >> choice;
+void Main::processInput()
+{
+    // Take user input
+    char *str_choice = new char[1];
+    cin >> str_choice;
+    int choice = (int)(str_choice[0]) - 48; // Input is converted from string to int so that the program will continue to work even if the user enters a non-number
 
     // Clear input buffer
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
     // Handles choice inputs for terminal UI, exit, error handling
-    switch (choice) {
-        case 1: {
-            TerminalUI terminalUI;
-            terminalUI.start();
-            break;
+    switch (choice)
+    {
+    case 1:
+    {
+        TerminalUI terminalUI;
+        terminalUI.start();
+        break;
+    }
+    case 2:
+    {
+        PlantFarm plantfarm;
+        int water_input = 2;
+        int nitro_input = 2;
+        while (!plantfarm.transition(water_input, nitro_input))
+        {
+            cout << "<Water> <Nitrogen> Input: " << water_input << " " << nitro_input << "\n"; // Format for showing the user what the
+            continue;
         }
-        case 2: {
-            PlantFarm plantfarm;
-            while (!plantfarm.transition(2, 2)) {
-                continue;
-            }
-            break;
-        }
-        case 3:
-            std::cout << "Exiting...\n";
-            exit(0);
-        default:
-            std::cout << "Invalid choice. Please try again.\n";
+        break;
+    }
+    case 3:
+    {
+        ValueIteration valueiter;
+        cout << "Running Value Iteration...\n";
+    
+        break;
+    }
+    case 4:
+    {
+        cout << "Exiting...\n";
+        exit(0);
+    }
+    default:
+    {
+        cout << "\nInvalid choice. Please try again.\n";
+        break;
+    }
     }
 }
 
-int main() {
+int main()
+{
     Main main;
     main.start();
     return 0;

@@ -2,6 +2,7 @@
 #define TERMINAL_UI_H
 
 #include "PlantFarm.h"
+#include "ValueIteration.h"
 
 class TerminalUI {
 public:

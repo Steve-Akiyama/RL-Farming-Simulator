@@ -2,8 +2,9 @@
 #include <cstdlib>
 #include "PlantFarm.h"
 
+using namespace std;
+
 PlantFarm::PlantFarm() {
-    
     //Initializes varialbes
     _time = 0;
     _growth = 0;
@@ -42,7 +43,7 @@ int PlantFarm::getYield() {
  * Includes all status variables within the State portion of the MDP.
 */
 void PlantFarm::printStatus() {
-    std::cout << 
+    cout << 
     "\nTime:     " << getTime() <<
     "\nWater:    " << getWater() <<
     "\nNitrogen: " << getNitro() <<
@@ -63,7 +64,7 @@ bool PlantFarm::transition(int waterInput, int nitroInput) {
     //Checks for correct inputs, and exits otherwise
     if (waterInput > 4 || waterInput < 0 ||
         nitroInput > 4 || nitroInput < 0) {
-            std::cout << "\nPlease enter values within the proper range.";
+            cout << "\nPlease enter values within the proper range.";
             return 0;
         }
 
@@ -87,7 +88,7 @@ bool PlantFarm::transition(int waterInput, int nitroInput) {
         printStatus(); //Prints the stats
         return 1;
     } else if (_status == 0) {
-        std::cout << "\nOh no! The plant died.\n";
+        cout << "\nOh no! The plant died.\n";
         printStatus(); //Prints the stats
         return 1;
     } else {
@@ -109,7 +110,7 @@ void PlantFarm::waterChange(int waterInput) {
 
     //Creates a random number to generate transition changes
     int random_number = rand() % 100 + 1;
-    //std::cout << "\n\nRandom Number: " << random_number << "\n\n";
+    //cout << "\n\nRandom Number: " << random_number << "\n\n";
 
     //Determines if the transition function should give a water change
     if (random_number < (100 * WATER_CHANCE)) {
