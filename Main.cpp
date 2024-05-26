@@ -1,7 +1,9 @@
-#include "Main.h"
-#include "TerminalUI.h"
+#include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <limits>
+#include "Main.h"
+#include "TerminalUI.h"
 
 using namespace std;
 
@@ -10,7 +12,8 @@ Main::Main()
     // Constructor - no initialization needed
 }
 
-void Main::printAsciiTitle() {
+void Main::printAsciiTitle()
+{
     // I promise it doesn't look this weird when you run it
     cout << "______ _             _    ______                   " << endl;
     cout << "| ___ \\ |           | |   |  ___|                  " << endl;
@@ -60,20 +63,21 @@ void Main::processInput()
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     // Print separator
-    cout << "--------------------" << endl
-         << endl;
+    cout << "--------------------" << endl << endl;
 
     // Handles choice inputs for terminal UI, exit, error handling
     switch (choice)
     {
     case 1:
     {
+        cout << "Running Manual Input..." << endl;
         TerminalUI terminalUI;
         terminalUI.start();
         break;
     }
     case 2:
     {
+        cout << "Running Auto-Input (2 2)..." << endl;
         PlantFarm plantfarm;
         int water_input = 2;
         int nitro_input = 2;
@@ -86,9 +90,11 @@ void Main::processInput()
     }
     case 3:
     {
-        ValueIteration valueiter;
         cout << "Running Value Iteration..." << endl;
-
+        ValueIteration valueiter;
+        clock_t time_elapsed = valueiter.run(); // Run value iteration
+        cout << fixed << setprecision(6) 
+            << "Time Elapsed (seconds): " << ((double)(time_elapsed) / 1000000) << endl;
         break;
     }
     case 4:
