@@ -10,5 +10,5 @@ Greggory Hickman
 Joseph Murche
 Jamie Parker
 
-Project to solve a "PlantFarm" MDP using value iteration.
+Project to solve a "PlantFarm" MDP using value iteration, every visit monte-carlo, simple actor-critic, and REINFORCE.
 Problem specifications and class implementation can be found in PlantFarm.cpp
