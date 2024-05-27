@@ -22,7 +22,10 @@
         "iosfwd": "cpp",
         "istream": "cpp",
         "iterator": "cpp",
+<<<<<<< Updated upstream
         "map": "cpp",
+=======
+>>>>>>> Stashed changes
         "memory": "cpp",
         "new": "cpp",
         "ostream": "cpp",
@@ -45,7 +48,10 @@
         "xstddef": "cpp",
         "xstring": "cpp",
         "xtr1common": "cpp",
+<<<<<<< Updated upstream
         "xtree": "cpp",
+=======
+>>>>>>> Stashed changes
         "xutility": "cpp"
     }
 }
