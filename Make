@@ -1,0 +1,22 @@
+CC = g++
+CFLAGS = -std=c++11 -Wall
+
+# List of source files
+SRCS = PlantFarm.cpp ActorCritic.cpp TerminalUI.cpp Main.cpp
+
+# List of object files
+OBJS = $(SRCS:.cpp=.o)
+
+# Executable name
+EXEC = plant_farm_simulator
+
+all: $(EXEC)
+
+$(EXEC): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(EXEC)
+
+%.o: %.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(OBJS) $(EXEC)
