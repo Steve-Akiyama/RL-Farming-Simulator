@@ -14,19 +14,20 @@ class ValueIteration
     /**
      * Defines constants for the class. Includes upper bounds, starting values, transition function chances, and decay rates.
      */
+    const bool DEBUG = false;        // Set to true to enable debug messages
 
-    // Variables
-    PlantFarm *plant_farm;
+    const int MAX_TRIALS = 10;
+    const int INIT_BEST_Q = -10000;
 
-    const double GAMMA = 0.9;       // Discount factor (0 < x < 1)
+    const double GAMMA = 0.90;      // Discount factor (0 < x < 1)
     const double EPSILON = 0.01;    // Convergence threshold (0 < x < 1, lower value = higher chance of optimal policy, but longer runtime)
 
     // State space
     struct State
     {
         int time;   //[0, 10] where 0 is the starting value and 10 is the end of the simulation
-        int water;  //[0, WATER_MAX] where 0 is the lowest possible value and WATER_MAX is the highest possible value
-        int nitro;  //[0, NITRO_MAX] where 0 is the lowest possible value and NITRO_MAX is the highest possible value
+        int water;  //[0, WATER_MAX]
+        int nitro;  //[0, NITRO_MAX]
         int status; //[0, 5] where 1 is heavy plant decay and 5 is plant flourishing. Growth requires a status of 4 or 5, decay requires a status of 1 or 2.
         int growth; //[0, 4] where 0 is a seedling and 4 is fully grown.
         int yield;  //[0, 2] where 0 is no yield and 2 is max yield. Yield > 0 requires a fully grown plant, and max yield requires max status.
@@ -37,22 +38,29 @@ class ValueIteration
         }
     };
 
-    // Action space
+    // Actions
+    // Some of the below code adapted from https://www.geeksforgeeks.org/pair-in-cpp-stl/
     typedef pair<int, int> Action;
-    vector<Action> actions;
 
-    // Value function
-    map<State, double> valueFunction;
+    vector<Action> actions;                         // Action space
+    Action best_action;
 
-    // Policy
-    map<State, Action> policy;
+    // Value function (V(s,a))
+    map<pair<State, Action>, double> value_function; // the double is the V of that s,a pair
+
+    // Policy 
+    map<State, Action> policy;  // List of mapped state, action pairs
 
 public:
-    ValueIteration();   // Default constructor. Initializes values.
+    ValueIteration();           // Default constructor. Initializes values.
 
-    void setup(PlantFarm &farm);
+    State* init_current_state(PlantFarm& plant_farm);
 
-    clock_t run();     // Runs the algorithm. This is what should be called from Main.cpp.
+    void print_value_function(State& state);
+
+    int get_best_action(State& state);
+
+    clock_t run();      // Runs the algorithm. This is what should be called from Main.cpp.
 
 private:
 };

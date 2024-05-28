@@ -94,7 +94,7 @@ void Main::processInput()
         ValueIteration valueiter;
         clock_t time_elapsed = valueiter.run(); // Run value iteration
         cout << fixed << setprecision(6) 
-            << "Time Elapsed (seconds): " << ((double)(time_elapsed) / 1000000) << endl;
+            << "Time Elapsed: " << ((double)(time_elapsed) / 1000000) << " seconds" << endl;
         break;
     }
     case 4:
