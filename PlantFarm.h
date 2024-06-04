@@ -8,8 +8,8 @@ class PlantFarm {
     /**
      * Defines constants for the class. Includes upper bounds, starting values, transition function chances, and decay rates.
      */
-    // Final time period
-    const int TIME_FINAL = 10; 
+     // Final time period
+    const int TIME_FINAL = 10;
 
     // Max values
     const int WATER_MAX = 4;
@@ -46,32 +46,35 @@ public:
     //Default constructor. Initializes values.
     PlantFarm();
 
-    //Getters for variables within the class.
+    //Copy constructor. For when a deep copy of an existing plant farm must be made.
+    PlantFarm(const PlantFarm& other);
+
+//Getters for variables within the class.
     int getTime();
     int getWater();
     int getNitro();
     int getStatus();
     int getGrowth();
     int getYield();
+    float* getProbabilities();
 
     //Calculates and returns the reward based on the status and yield.
     int reward();
 
     //Prints variable information about the current state, as well as the current reward.
     void printStatus();
-    
+
     /**
-     * The one and only public class other than the constructor that affects the values within the class. 
+     * The one and only public class other than the constructor that affects the values within the class.
      * Allows the class to progress one time unit, with inputs for water and nitrogen.
      */
     bool transition(int waterInput, int nitroInput);
 
-private:
-    //Update function for water
-    void waterChange(int waterInput);
+    
 
-    //Update function for nitrogen
-    void nitroChange(int nitroInput);
+private:
+    //Update function for water and nitrogen
+    void waterAndNitroChange(int waterInput, int nitroInput);
 
     //Status update function. Uses nitrogen and water status to generate an entirely new status.
     void statusUpdate();

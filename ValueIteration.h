@@ -16,11 +16,11 @@ class ValueIteration
      */
     const bool DEBUG = false;        // Set to true to enable debug messages
 
-    const int MAX_TRIALS = 10;
+    const int MAX_TRIALS = 10000;
     const int INIT_BEST_Q = -10000;
 
     const double GAMMA = 0.90;      // Discount factor (0 < x < 1)
-    const double EPSILON = 0.01;    // Convergence threshold (0 < x < 1, lower value = higher chance of optimal policy, but longer runtime)
+    const double EPSILON = 0.90;    // Convergence threshold (0 < x < 1, lower value = higher chance of optimal policy, but longer runtime)
 
     // State space
     struct State
@@ -59,6 +59,10 @@ public:
     void print_value_function(State& state);
 
     int get_best_action(State& state);
+
+    double qvalue(PlantFarm& plant_farm, State& state, Action& action);
+
+    void VI();
 
     clock_t run();      // Runs the algorithm. This is what should be called from Main.cpp.
 
