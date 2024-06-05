@@ -47,10 +47,10 @@ struct ValueIteration::State* ValueIteration::init_current_state(PlantFarm& plan
     // Set V(s,a) for all actions in state to 0
     for (int i = 0; i < actions.size(); i++)
     {
-        value_function[make_pair(*current_state, actions[i])] = (double)0;
+        if (value_function.find(make_pair(*current_state, actions[i])) == value_function.end()) {
+            value_function[make_pair(*current_state, actions[i])] = (double)0;
+        }
     }
-
-    if (DEBUG) print_value_function(*current_state);
 
     return current_state;
 }
@@ -62,8 +62,7 @@ struct ValueIteration::State* ValueIteration::init_current_state(PlantFarm& plan
 void ValueIteration::print_value_function(struct State& state)
 {
     // Print state info
-    cout << "State: "
-        << "(time: " << state.time
+    cout << "State: (time: " << state.time
         << ", water: " << state.water
         << ", nitrogen: " << state.nitro
         << ", status: " << state.time
@@ -195,44 +194,39 @@ void ValueIteration::VI()
         PlantFarm* plant_farm = new PlantFarm();    // Fresh new PlantFarm each trial
 
         double max_residual = 0.0;
-        double bestQ = -10000.0;
-        int best_action_id = 0;
         bool trial_over = false;
 
         while (!trial_over) {
+            State* S = init_current_state(*plant_farm);
+
             // Iterate over all possible actions for this state
-            for (int action_id = 0; action_id < size(actions); action_id++) {
+            for (int action_id = 0; action_id < actions.size(); action_id++) {
+                Action A = actions[action_id];  // Action to be tested
+                
                 PlantFarm* temp_farm = new PlantFarm(*plant_farm);  // Temporary PlantFarm, in order to test an action without progressing to the next state on the real PlantFarm
-
-                // State, Action pair to be tested
-                struct State* S = init_current_state(*temp_farm);
-                Action A = actions[action_id];
-
-                trial_over = temp_farm->transition(A.first, A.second);
+                temp_farm->transition(A.first, A.second);
 
                 cout << "Input {<Water>, <Nitrogen>}: " << "{" << A.first << ", " << A.second << "}" << endl;
 
                 // Calculate the Q-value for the action
                 double Q = qvalue(*temp_farm, *S, A);
 
-                // If this is the best action so far, update the policy for the current state
-                if (Q > bestQ) {
-                    bestQ = Q;
-                    best_action_id = action_id;
-                }
-
                 // Check for convergence
-                double residual = fabs(value_function[make_pair(*S, A)] - bestQ);
+                double residual = fabs(value_function[make_pair(*S, A)] - Q);
                 if (residual > max_residual) {
                     max_residual = residual;
                 }
+
+                value_function[make_pair(*S, A)] = Q;
             }
+
             // Update the policy & value function
-            struct State* S = init_current_state(*plant_farm);
-            Action best_A = actions[best_action_id];
-            policy[*S] = actions[best_action_id];           // Policy
-            cout << "Policy Change, A: " << "{" << best_A.first << ", " << best_A.second << "}" << endl;
-            value_function[make_pair(*S, best_A)] = bestQ;  // Value
+            int best_action_id = get_best_action(*S);
+            policy[*S] = actions[best_action_id];
+
+            if (max_residual < EPSILON) {
+                trial_over = true;
+            }
 
             // Perform the best action
             trial_over = plant_farm->transition(actions[best_action_id].first, actions[best_action_id].second);
@@ -256,18 +250,16 @@ void ValueIteration::VI()
 void ValueIteration::run_with_policy()
 {
     PlantFarm* plant_farm = new PlantFarm();
+    bool trial_over = false;
 
-    bool joever = false;
-
-    while (!joever) {
+    while (!trial_over) {
         State* S = init_current_state(*plant_farm);
         Action A = policy[*S];
         int water_input = A.first;
         int nitro_input = A.second;
 
-        cout << "Input {<Water>, <Nitrogen>}: " << "{" << A.first << ", " << A.second << "}" << endl;
-
-        joever = plant_farm->transition(water_input, nitro_input);
+        trial_over = plant_farm->transition(water_input, nitro_input);
+        cout << "Input {<Water>, <Nitrogen>}: " << "{" << A.first << ", " << A.second << "}" << endl << endl;
     }
 }
 
@@ -287,7 +279,7 @@ clock_t ValueIteration::run()
     VI();
 
     // Show the (hopefully) optimal policy
-    cout << endl << endl << "RUNNING WITH POLICY" << endl << endl;
+    cout << endl << "RUNNING WITH POLICY" << endl << endl;
     run_with_policy();
 
     // Print the policy
