@@ -8,9 +8,9 @@ ActorCritic::ActorCritic() {
     // Seed random number generator
     srand(time(0));
 
-    gamma = 0.85;
-    epsilon = 1;
-    alpha = 0.15;
+    gamma = 0.85; //Discounted reward
+    epsilon = 1; //Exploration rate
+    alpha = 0.15; //Learning rate
 }
 
 void ActorCritic::runActorCritic(int episodeCount) {
@@ -34,8 +34,15 @@ void ActorCritic::runActorCritic(int episodeCount) {
             dataFile << i << " " << episodeReward << std::endl;
             std::string input;
 
-            double ep = getEpsilon();
-            setEpsilon(ep * 0.95);
+            totalReward += episodeReward;
+
+            if (episodeReward < (totalReward / i)) {
+                double ep = getEpsilon();
+                setEpsilon(ep * 1.01);
+            } else {
+                double ep = getEpsilon();
+                setEpsilon(ep * .95);
+            }
 
             if (debug) {
                 // Wait for the user to press Enter
@@ -63,6 +70,7 @@ int ActorCritic::runEpisode() {
     //Stores if the sim is complete
     bool complete = false;
 
+    //Lots of variable init
     int currentWater;
     int currentNitro;
     int * action = new int[2];
@@ -74,9 +82,8 @@ int ActorCritic::runEpisode() {
 
     farm.printStatus();
 
-    //Episode Loop: Runs as long as transition doesn't return 0 (Returns 0 when plant is dead or time is complete)
+    //Episode Loop: Runs as long as transition doesn't return 0 (Returns 0 when complete)
     while (!complete) {
-        //rewards[farm.getTime()] = farm.reward(); //Stores away the reward at the current time
 
         // Obtain current state values
         currentWater = farm.getWater();
@@ -102,7 +109,8 @@ int ActorCritic::runEpisode() {
         // Calculate TD Error
         TD = TDError(currentWater, currentNitro, reward, newWater, newNitro);
 
-        if (debug) {
+        if (debug) //Prints TD error
+        {
             std::cout << "\nTD Error: " << TD;
         }
 
@@ -114,7 +122,8 @@ int ActorCritic::runEpisode() {
 
     } 
 
-    if (debug) {
+    if (debug) //Prints current hyperparameters
+    {
         std::cout 
         << "\n\nEPSILON (Exploration rate): " << epsilon
         << "\nGAMMA (Future reward decay rate): " << gamma 
@@ -122,7 +131,8 @@ int ActorCritic::runEpisode() {
     }
 
     
-    if (debug) {
+    if (debug) //Prints current value function and policy function
+    {
         std::cout << "\n\nValue Function (V) after episode:\n" << std::endl;
         for (int i = 0; i < 5; ++i) {
             for (int j = 0; j < 5; ++j) {

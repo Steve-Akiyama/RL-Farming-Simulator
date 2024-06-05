@@ -25,20 +25,23 @@ class ActorCritic {
 
     public:
 
+        //Class Constructor
         ActorCritic();
 
-        void runActorCritic(int);
+        //Runs N episodes of Actor-Critic, prints out a graph of results
+        void runActorCritic(int N);
 
+        //Runs a singular episode of Actor-Critic
         int runEpisode();
 
+        //Sets the class in or out of debug mode. Debug mode: Gives additional data
         void setDebug(bool);
 
+        //Getters and Setters
         void setEpsilon(double);
-
         double getEpsilon();
 
         void setAlpha(double);
-
         double getAlpha();
 
     private:
@@ -46,10 +49,10 @@ class ActorCritic {
         //Initialize value function
         void initValueFunct();
 
-        //initialize theta
+        //Initialize theta
         void initTheta();
 
-        //small random value function to init theta
+        //Small random value function to init theta
         double smallRandomValue();
 
         //Actor action method
