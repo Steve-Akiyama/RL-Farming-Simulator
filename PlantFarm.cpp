@@ -58,6 +58,8 @@ float* PlantFarm::getProbabilities() {
     float* prob = new float[2];
     prob[0] = WATER_CHANCE;
     prob[1] = NITRO_CHANCE;
+
+    return prob;
 }
 
 /**
@@ -66,14 +68,13 @@ float* PlantFarm::getProbabilities() {
 */
 void PlantFarm::printStatus() {
     cout <<
-        "\nTime:     " << getTime() <<
-        "\nWater:    " << getWater() <<
-        "\nNitrogen: " << getNitro() <<
-        "\nStatus:   " << getStatus() <<
-        "\nGrowth:   " << getGrowth() <<
-        "\nYield:    " << getYield() <<
-        "\nReward:   " << reward() <<
-        "\n";
+        "Time: " << getTime() << " | " <<
+        "Wat: " << getWater() << " | " <<
+        "Nit: " << getNitro() << " | " <<
+        "Stat: " << getStatus() << " | " <<
+        "Grw: " << getGrowth() << " | " <<
+        "Yld: " << getYield() << " | " <<
+        "R: " << reward() << endl;
 }
 
 /**

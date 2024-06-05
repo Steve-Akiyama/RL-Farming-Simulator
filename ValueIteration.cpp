@@ -113,26 +113,49 @@ int ValueIteration::get_best_action(struct State& state)
  * Run value iteration learning algorithm
  * Based on the grid_VI_basecode.py homework 1 project
  */
-double ValueIteration::qvalue(PlantFarm& plant_farm, struct State& state, pair<int, int>& action)
+double ValueIteration::qvalue(PlantFarm& plant_farm, struct State& S, pair<int, int>& A)
 {
     double Q = 0;
 
+    // Initialize the probability function, 5 possible next states (s')
     float* probabilities = plant_farm.getProbabilities();
+    map<State, double> prob_function;    // The probability that each state has to be s'
+    
+    struct State state1 = S;    // Water + Input - 2, Nitro + Input - 2
+    state1.water += A.first - 2;
+    state1.nitro += A.second - 2;
+    prob_function[state1] = 1.0 - probabilities[1] - probabilities[0];
 
-    int net_water_change;
+    struct State state2 = S;    // Water + Input - 3, Nitro + Input - 2
+    state2.water += A.first - 3;
+    state2.nitro += A.second - 2;
+    prob_function[state2] = probabilities[0] / 2;
 
-    vector<pair<int, double>> succ_list = P[s][a]; // Assuming P is a global variable
+    struct State state3 = S;    // Water + Input - 1, Nitro + Input - 2
+    state3.water += A.first - 1;
+    state3.nitro += A.second - 2;
+    prob_function[state3] = probabilities[0] / 2;
 
-    for (const auto& succ : succ_list) {
-        int succ_state_id = find(states.begin(), states.end(), succ.first) - states.begin(); // denotes s'
-        double prob = succ.second; // denotes the transition probability
+    struct State state4 = S;    // Water + Input - 2, Nitro + Input - 3
+    state4.water += A.first - 2;
+    state4.nitro += A.second - 3;
+    prob_function[state4] = 1.0 - probabilities[1] / 2;
 
-        // Complete the following line of code to calculate Q-value.
-        Q += prob * V[succ_state_id]; // Current equation: sum(T(s,a,s') * V*(s'))
+    struct State state5 = S;    // Water + Input - 2, Nitro + Input - 1
+    state5.water += A.first - 2;
+    state5.nitro += A.second - 1;
+    prob_function[state5] = 1.0 - probabilities[1] / 2;
+
+    for (const auto& s_prime : prob_function) {
+        struct State curr_state = s_prime.first;  // denotes s'
+        double prob = s_prime.second; // denotes the transition probability to s'
+        int best_action_id = get_best_action(curr_state);
+
+        Q += prob * value_function[make_pair(curr_state, actions[best_action_id])]; // Current equation: sum(T(s,a,s') * V(s'))
     }
 
-    Q *= gamma; // Current equation: gamma * sum(T(s,a,s') * V*(s'))
-    Q += R[s]; // Current equation: R(s) + gamma * sum(T(s,a,s') * V*(s'))
+    Q *= GAMMA; // Current equation: gamma * sum(T(s,a,s') * V(s'))
+    Q += plant_farm.reward(); // Current equation: R(s) + gamma * sum(T(s,a,s') * V(s'))
 
     return Q;
 }
@@ -149,49 +172,82 @@ void ValueIteration::VI()
         PlantFarm* plant_farm = new PlantFarm();    // Fresh new PlantFarm each trial
 
         double max_residual = 0.0;
+        double bestQ = -10000.0;
+        double best_action_id = 0;
         bool trial_over = false;
 
         while (!trial_over) {
             // struct State* current_state = init_current_state(*plant_farm);
 
             // Iterate over all possible actions for this state
-            for (auto action : actions) {
+            for (int action_id = 0; action_id < size(actions); action_id++) {
+                Action A = actions[action_id];
+                
                 PlantFarm* temp_farm = new PlantFarm(*plant_farm);  // Temporary PlantFarm, in order to test an action without progressing to the next state on the real PlantFarm
-                trial_over = temp_farm->transition(action.first, action.second);
+                trial_over = temp_farm->transition(A.first, A.second);
 
-                cout << "Input {<Water>, <Nitrogen>}: " << "{" << action.first << ", " << action.second << "}" << endl;
+                cout << "Input {<Water>, <Nitrogen>}: " << "{" << A.first << ", " << A.second << "}" << endl;
 
                 // Calculate the Q-value for the action
-                struct State* state = init_current_state(*temp_farm);
-                double Q = qvalue(*temp_farm, *state, action);
-                
+                struct State* S = init_current_state(*temp_farm);
+                double Q = qvalue(*temp_farm, *S, A);
+
+                // If this is the best action so far, update the policy for the current state
+                if (Q > bestQ) {
+                    bestQ = Q;
+                    best_action_id = action_id;
+                }
 
                 // To do: Update value function based on the next state
-                
-
-                double residual = fabs(value_function[make_pair(*state, action)] - Q);
-                max_residual = max(max_residual, residual);
-
-                value_function[make_pair(*state, action)] = Q;
             }
 
-            // Update the policy for the current state
-            struct State* state = init_current_state(*plant_farm);
-            int best_action_id = get_best_action(*state);
-            policy[*state] = actions[best_action_id];
+            // Update the policy & value function
+            struct State* S = init_current_state(*plant_farm);
+            Action best_A = actions[best_action_id];
+            policy[*S] = actions[best_action_id];           // Policy
+            value_function[make_pair(*S, best_A)] = bestQ;  // Value
 
             // Check for convergence
-            if (max_residual < EPSILON) {
-                break;
+            double residual = value_function[make_pair(*S, best_A)] - bestQ;
+            if (residual > max_residual) {
+                max_residual = residual;
             }
-
+            
             // Perform the best action
             trial_over = plant_farm->transition(actions[best_action_id].first, actions[best_action_id].second);
             cout << "Input {<Water>, <Nitrogen>}: " << "{" << actions[best_action_id].first << ", " << actions[best_action_id].second << "}" << endl;
         }
+
+        cout << "Max Residual: " << max_residual << endl;
+        if (max_residual < EPSILON) {
+            cout << "Convergence!" << endl;
+            //break;
+        }
     }
 
     return;
+}
+
+/**
+ * run_with_policy()
+ * Runs a plant farm using the current policy
+ */
+void ValueIteration::run_with_policy()
+{
+    PlantFarm* plant_farm = new PlantFarm();
+
+    bool joever = false;
+
+    while (!joever) {
+        State* S = init_current_state(*plant_farm);
+        Action A = policy[*S];
+        int water_input = A.first;
+        int nitro_input = A.second;
+
+        cout << "Input {<Water>, <Nitrogen>}: " << "{" << A.first << ", " << A.second << "}" << endl;
+
+        joever = plant_farm->transition(water_input, nitro_input);
+    }
 }
 
 /**
@@ -208,6 +264,10 @@ clock_t ValueIteration::run()
 
     // Value Iteration start
     VI();
+
+    // Show the (hopefully) optimal policy
+    cout << endl << endl << "RUNNING WITH POLICY" << endl << endl;
+    run_with_policy();
 
     // Stop the timer
     clock_t const timer_end = clock();
