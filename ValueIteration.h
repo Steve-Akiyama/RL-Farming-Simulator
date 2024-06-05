@@ -16,8 +16,8 @@ class ValueIteration
      */
     const bool DEBUG = false;        // Set to true to enable debug messages
 
-    const int MAX_TRIALS = 10000;
-    const int INIT_BEST_Q = -10000;
+    const int MAX_TRIALS = 10;
+    const int S_PRIME_POP = 10;
 
     const double GAMMA = 0.90;      // Discount factor (0 < x < 1)
     const double EPSILON = 20;
@@ -57,6 +57,8 @@ public:
     State* init_current_state(PlantFarm& plant_farm);
 
     void print_value_function(State& state);
+
+    void print_policy();
 
     int get_best_action(State& state);
 
