@@ -267,7 +267,7 @@ int PlantFarm::reward() {
 
     //Adds reward based on status
     switch (_status) {
-        case 0: reward += -1000; break; //Plant died :c
+        case 0: reward += -200; break; //Plant died :c
         case 1: reward += -50; break;   //Large negative reward for a hugely negative status.
         case 2: reward += -10; break;    //Negative reward for a negative status.
         case 3: reward += 0; break;     //Here solely for readability, does nothing if the status will not grow or harm the plant.
@@ -278,8 +278,8 @@ int PlantFarm::reward() {
     //Adds reward based on yield
     switch (_yield) {
         case 0: reward += 0; break;    //No yield, no reward.
-        case 1: reward += 2500; break;   //Regular yield, regular reward.
-        case 2: reward += 5000; break;   //Large yield, large reward.
+        case 1: reward += 50; break;   //Regular yield, regular reward.
+        case 2: reward += 100; break;   //Large yield, large reward.
     }
 
     return reward;
