@@ -177,19 +177,19 @@ void ValueIteration::VI()
         bool trial_over = false;
 
         while (!trial_over) {
-            // struct State* current_state = init_current_state(*plant_farm);
-
             // Iterate over all possible actions for this state
-            for (int action_id = 0; action_id < size(actions); action_id++) {
+            for (int action_id = 0; action_id < size(actions); action_id++) {                
+                PlantFarm* temp_farm = new PlantFarm(*plant_farm);  // Temporary PlantFarm, in order to test an action without progressing to the next state on the real PlantFarm
+                
+                // State, Action pair to be tested
+                struct State* S = init_current_state(*temp_farm);
                 Action A = actions[action_id];
                 
-                PlantFarm* temp_farm = new PlantFarm(*plant_farm);  // Temporary PlantFarm, in order to test an action without progressing to the next state on the real PlantFarm
                 trial_over = temp_farm->transition(A.first, A.second);
 
                 cout << "Input {<Water>, <Nitrogen>}: " << "{" << A.first << ", " << A.second << "}" << endl;
 
                 // Calculate the Q-value for the action
-                struct State* S = init_current_state(*temp_farm);
                 double Q = qvalue(*temp_farm, *S, A);
 
                 // If this is the best action so far, update the policy for the current state
@@ -198,20 +198,18 @@ void ValueIteration::VI()
                     best_action_id = action_id;
                 }
 
-                // To do: Update value function based on the next state
+                // Check for convergence
+                double residual = fabs(value_function[make_pair(*S, A)] - bestQ);
+                if (residual > max_residual) {
+                    max_residual = residual;
+                }
             }
-
             // Update the policy & value function
             struct State* S = init_current_state(*plant_farm);
             Action best_A = actions[best_action_id];
             policy[*S] = actions[best_action_id];           // Policy
+            cout << "Policy Change, A: " << "{" << best_A.first << ", " << best_A.second << "}" << endl;
             value_function[make_pair(*S, best_A)] = bestQ;  // Value
-
-            // Check for convergence
-            double residual = value_function[make_pair(*S, best_A)] - bestQ;
-            if (residual > max_residual) {
-                max_residual = residual;
-            }
             
             // Perform the best action
             trial_over = plant_farm->transition(actions[best_action_id].first, actions[best_action_id].second);

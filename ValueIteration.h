@@ -16,7 +16,7 @@ class ValueIteration
      */
     const bool DEBUG = false;        // Set to true to enable debug messages
 
-    const int MAX_TRIALS = 10;
+    const int MAX_TRIALS = 10000;
     const int INIT_BEST_Q = -10000;
 
     const double GAMMA = 0.90;      // Discount factor (0 < x < 1)
