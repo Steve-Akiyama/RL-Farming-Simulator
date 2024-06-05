@@ -22,7 +22,11 @@ void ActorCritic::runActorCritic(int episodeCount) {
 
         std::cout << "Running with Actor-Critic with " << episodeCount << " episodes." << std::endl;
 
-        for (int i = 0; i < episodeCount; i++) {
+        for (int i = 1; i <= episodeCount; i++) {
+            if (i == episodeCount) {
+                debug = true;
+            }
+
             std::cout << "\n--------\nEpisode: " << i << "\n--------\n";
             int episodeReward = runEpisode(); // Assuming method.runEpisode() returns episode reward
             episodeRewards.push_back(episodeReward);
@@ -43,11 +47,9 @@ void ActorCritic::runActorCritic(int episodeCount) {
         dataFile.close();
 
         // Plotting
-        if (!debug) {
-            FILE *gnuplotPipe = _popen("gnuplot -persistent", "w");
-            fprintf(gnuplotPipe, "plot 'episode_rewards.dat' with lines title 'Episode Rewards'\n");
-            fflush(gnuplotPipe);
-        }
+        FILE *gnuplotPipe = _popen("gnuplot -persistent", "w");
+        fprintf(gnuplotPipe, "plot 'episode_rewards.dat' with lines title 'Episode Rewards'\n");
+        fflush(gnuplotPipe);
 }
 
 int ActorCritic::runEpisode() {
@@ -136,16 +138,11 @@ int ActorCritic::runEpisode() {
 
         for (int i = 0; i < 5; ++i) {
             for (int j = 0; j < 5; ++j) {
-                std::cout << "(" << i << "," << j << ") | ";
+                std::cout << "(" << i << "," << j << ") |";
                 for (int k = 0; k < 5; ++k) {
                     for (int l = 0; l < 5; ++l) {
                         // Format output to be same length numbers rounded to 2 decimal places
-                        std::cout << std::fixed << std::setprecision(2) << std::setw(5) << std::internal << std::right << theta[i * 125 + j * 25 + k * 5 + l];
-                        if (theta[i * 125 + j * 25 + k * 5 + l] >= 0) {
-                            std::cout << "| ";
-                        } else {
-                            std::cout << "| ";
-                        }
+                        std::cout << std::fixed << std::setprecision(2) << std::setw(6) << std::internal << std::right << theta[i * 125 + j * 25 + k * 5 + l] << "|";
                     }
                 }
                 std::cout << std::endl;
