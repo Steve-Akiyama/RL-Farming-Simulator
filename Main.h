@@ -13,7 +13,7 @@
 
 class Main {
 
-    MonteCarlo method;
+    MonteCarloMDP method;
 
 public:
     Main(); // Constructor

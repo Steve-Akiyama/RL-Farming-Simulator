@@ -52,6 +52,8 @@ public:
     int getStatus();
     int getGrowth();
     int getYield();
+    int getFinalTime(); // Added this method declaration
+    void reset();
 
     //Calculates and returns the reward based on the status and yield.
     int reward();

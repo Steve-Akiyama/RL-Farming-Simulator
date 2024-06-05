@@ -1,6 +1,14 @@
 #include "MonteCarlo.h"
+#include <iostream>
+#include <vector>
+#include <map>
 #include <tuple>
 #include <algorithm>
+#include <ctime>
+#include <limits>
+#include <cstdlib>
+
+using namespace std;
 
 MonteCarloMDP::MonteCarloMDP() {
     srand(time(nullptr)); // Seed for random number generation
@@ -13,7 +21,9 @@ void MonteCarloMDP::runEpisode() {
         State currentState = {farm.getTime(), farm.getWater(), farm.getNitro(), farm.getStatus(), farm.getGrowth(), farm.getYield()};
         Action action = {rand() % 5, rand() % 5};
         double reward = performAction(action);
-        episode.push_back(std::make_tuple(currentState, action, reward));
+        episode.push_back(make_tuple(currentState, action, reward));
+        
+        farm.printStatus();
         if (reward == -100) {
             break;
         }
@@ -29,21 +39,21 @@ double MonteCarloMDP::performAction(const Action& action) {
 
 void MonteCarloMDP::updateQValues() {
     double totalReward = 0;
-    std::reverse(episode.begin(), episode.end());
+    reverse(episode.begin(), episode.end());
     for (const auto &step : episode) {
         State state;
         Action action;
         double reward;
-        std::tie(state, action, reward) = step;
+        tie(state, action, reward) = step;
         totalReward += reward;
-        auto qValueKey = std::make_pair(state, action);
+        auto qValueKey = make_pair(state, action);
         returns[qValueKey].push_back(totalReward);
         qValues[qValueKey].first += totalReward;
         qValues[qValueKey].second += 1;
     }
 }
 
-void MonteCarloMDP::runMonteCarlo(int iterations) {
+void MonteCarloMDP::runMonteCarlo(int iterations = 5) {
     for (int i = 0; i < iterations; ++i) {
         runEpisode();
         updateQValues();
