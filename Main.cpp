@@ -43,8 +43,8 @@ void Main::displayMenu()
     std::cout << "1. Run Plant Farm Simulator with manual inputs" << endl;
     std::cout << "2. Auto-Run Plant Farm Simulator with auto-input values: \"2 2\"" << endl;
     std::cout << "3. Run with Value Iteration" << endl;
-    std::cout << "4. Run with Actor-Critic" << endl;
-    std::cout << "5. Run with Actor-Critic (DEBUG MODE)" << endl;
+    std::cout << "4. Run with Monte Carlo" << endl;
+    std::cout << "5. Run with Monte Carlo (DEBUG MODE)" << endl;
     std::cout << "6. Exit" << endl;
     std::cout << "Choose an option: ";
 }
@@ -127,9 +127,9 @@ void Main::processInput()
 
         int episodeCount = askForEpisodeCount(); // Asks for episode count
 
-        std::cout << "Running with Actor-Critic with " << episodeCount << " episodes." << endl; // Tells the user what's happening
+        std::cout << "Running with Monte Carlo with " << episodeCount << " episodes." << endl; // Tells the user what's happening
 
-        method.runActorCritic(episodeCount); //Runs actor-critic
+        method.runMonteCarlo(episodeCount); //Runs actor-critic
 
         break;
     }

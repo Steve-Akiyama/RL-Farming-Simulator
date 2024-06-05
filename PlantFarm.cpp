@@ -1,284 +1,286 @@
 #include <iostream>
+#include <iomanip>
 #include <cstdlib>
+#include "PlantFarm.h"
+
+using namespace std;
+
+PlantFarm::PlantFarm() {
+    reset();
+}
+
+void PlantFarm::reset() {
+    //Initializes varialbes
+    _time = 0;
+    _water = WATER_START;
+    _nitro = NITRO_START;
+    _status = STATUS_START;
+    _growth = 0;
+    _yield = 0;
+}
+
+int PlantFarm::getTime() {
+    return _time;
+}
+
+int PlantFarm::getWater() {
+    return _water;
+}
+
+int PlantFarm::getNitro() {
+    return _nitro;
+}
+
+int PlantFarm::getStatus() {
+    return _status;
+}
+
+int PlantFarm::getGrowth() {
+    return _growth;
+}
+
+int PlantFarm::getYield() {
+    return _yield;
+}
+
+int PlantFarm::getFinalTime() {
+    return TIME_FINAL;
+}
+
+/**
+ * Prints the working variables of PlantFarm. 
+ * Includes all status variables within the State portion of the MDP.
+*/
+void PlantFarm::printStatus() {
+    cout << 
+       "T: " << std::setw(2) << std::setfill('0') << getTime() <<
+    " | W: " << getWater() <<
+    " | N: " << getNitro() <<
+    " | S: " << getStatus() <<
+    " | G: " << getGrowth() <<
+    " | Y: " << getYield() <<
+    " | R: " << reward() <<
+    "\n";
+}
+
+/**
+ * Transitions the PlantFarm forward by one time unit.
+ * 
+ * Updates other variables depending on inputs.
+ * 
+ * Returns 1 if experiment complete.
+ * Returns 0 otherwise.
+*/
+bool PlantFarm::transition(int waterInput, int nitroInput) {
+    
+    //Checks for correct inputs, and exits otherwise
+    if (waterInput > 4 || waterInput < 0 ||
+        nitroInput > 4 || nitroInput < 0) {
+            cout << "\nPlease enter values within the proper range.";
+            return 0;
+        }
+
+
+    //Increments the time
+    _time += 1;
+
+    //Updates water and nitrogen variables
+    waterChange(waterInput);
+    nitroChange(nitroInput);
+
+    //Updates the status to reflect the new nitrogen/water levels
+    statusUpdate();
+
+    //Updates the growth
+    growthUpdate();
+
+    //Returns the end signifier if the experiment is complete
+    if (_time == TIME_FINAL) {
+        yieldUpdate(); //Produce crops
+        printStatus(); //Prints the stats
+        return 1;
+    } else if (_status == 0) {
+        printStatus(); //Prints the stats
+        return 1;
+    } else {
+        printStatus(); //Prints the stats
+        return 0;
+    }
+
+}
+
+/**
+ * Updates the water with input, natural decay and variable change
+*/
+void PlantFarm::waterChange(int waterInput) {
+    //Updates water as needed
+    _water += waterInput;
+
+    //Updates water with passive decay
+    _water -= WATER_DECAY;
+
+    //Creates a random number to generate transition changes
+    int random_number = rand() % 100 + 1;
+    //cout << "\n\nRandom Number: " << random_number << "\n\n";
+
+    //Determines if the transition function should give a water change
+    if (random_number < (100 * WATER_CHANCE)) {
+        if (random_number % 2) {
+            _water += 1;
+        } else {
+            _water -= 1;
+        }
+    }
+
+    //Updates water to fit within bounds
+    if (_water < 0) {
+        _water = 0;
+    } else if (_water > WATER_MAX) {
+        _water = WATER_MAX;
+    }
+}
+
+/**
+ * Updates the nitrogen with input, natural decay and variable change
+*/
+void PlantFarm::nitroChange(int nitroInput) {
+    //Updates nitrogen as needed
+    _nitro += nitroInput;
+
+    //Updates nitrogen with passive decay
+    _nitro -= NITRO_DECAY;
+
+    //Creates a random number to generate transition changes
+    int random_number = rand() % 100;
+
+    //Determines if the transition function should give a nitrogen change
+    if (random_number < (100 * NITRO_CHANCE)) {
+        if (random_number % 2) {
+            _nitro += 1;
+        } else {
+            _nitro -= 1;
+        }
+    }
+
+    //Updates water to fit within bounds
+    if (_nitro < 0) {
+        _nitro = 0;
+    } else if (_nitro > NITRO_MAX) {
+        _nitro = NITRO_MAX;
+    }
+}
+
+/**
+ * Updates the status to reflect the current water and nitrogen levels
+*/
+void PlantFarm::statusUpdate() {
+    
+    //Initializes status to STATUS_START on each cycle
+    _status = STATUS_START;
+
+    //Updates the status dependant on the water
+    switch (_water) {
+        case 0: _status -= 2; break;
+        case 1: _status += 0; break;
+        case 2: _status += 1; break;
+        case 3: _status += 0; break;
+        case 4: _status -= 2; break;
+    }
+
+    //Updates the status dependant on the nitrogen
+    switch (_nitro) {
+        case 0: //If the plant has no nitrogen, it cannot grow (But also is not damaged)
+            _status -= 1;
+            break;
+        case 1: //If the plant has too little nitrogen, it only can grow a little
+            if (_status > 3) {
+                _status -= 1; //Still grows if and only if status was max beforehand
+            }
+            break;
+        case 2: //If the plant has the right amount of nitrogen, lets the plant reach max growth IF it is healthy
+            if (_status >= 3) {
+                _status += 1;
+            }
+            break;
+        case 3: //If the plant has a little too much nitrogen, it's OK, but no effect
+            break;
+        case 4: //If the plant has way too much nitrogen, it can hurt the plant!
+            _status -= 1;
+            break;
+    }
+
+    //Catch out of bounds statuses
+    if (_status < 0) {
+        _status = 0;
+    } else if (_status > STATUS_MAX) {
+        _status = STATUS_MAX;
+    }
+
+    return;
+}
+
+/**
+ * Updates the growth based on the status
+*/
+void PlantFarm::growthUpdate() {
+    switch (_status) {
+        case 1: _growth -= 2; break;
+        case 2: _growth -= 1; break;
+        case 3: _growth += 0; break;
+        case 4: _growth += 1; break;
+        case 5: _growth += 2; break;
+    }
+
+    if (_growth < 0) {
+        _growth = 0;
+    } else if (_growth > GROWTH_MAX) {
+        _growth = GROWTH_MAX;
+    }
+
+    return;
+}
+
+/**
+ * Updates the plant yield based on the growth
+*/
+void PlantFarm::yieldUpdate() {
+    if (_growth != GROWTH_MAX) {
+        _yield = 0;
+        return;
+    } else {
+        if (_status == 4) {
+            _yield = 1;
+        } else if (_status == 5) {
+            _yield = 2;
+        }
+    }
+}
 
 
 /**
- * Creates an instance of the problem we're solving
- * 
- * Public Methods:
- * - printStatus()
- * - transition()
- * 
- * Getters:
- * - getTime()
- * - getWater()
- * - getNitro()
- * - getStatus()
- * - getGrowth()
- * - getYield()
- * 
+ * Returns a reward based on the status and yield of the plant.
 */
-class PlantFarm {
+int PlantFarm::reward() {
 
-    //Initializes upper bounds for variables
-    const int TIME_FINAL = 10;
-    const int WATER_MAX = 4;
-    const int NITRO_MAX = 4;
-    const int STATUS_MAX = 5;
-    const int GROWTH_MAX = 4;
-    const int YIELD_MAX = 2;
+    //Initializes reward (return value) to 0
+    int reward = 0;
 
-    //Initializes starting values for variables (All others start at 0)
-    const int WATER_START = 3;
-    const int NITRO_START = 3;
-    const int STATUS_START = 3;
+    //Adds reward based on status
+    switch (_status) {
+        case 0: reward += -200; break; //Plant died :c
+        case 1: reward += -50; break;   //Large negative reward for a hugely negative status.
+        case 2: reward += -10; break;    //Negative reward for a negative status.
+        case 3: reward += 0; break;     //Here solely for readability, does nothing if the status will not grow or harm the plant.
+        case 4: reward += 5; break;     //Small positive reward for a small positive effect.
+        case 5: reward += 10; break;    //Decent positive reward for a positive effect
+    }
 
-    //Hidden status threshold
-    const int HIDDEN_STATUS = 2;
+    //Adds reward based on yield
+    switch (_yield) {
+        case 0: reward += 0; break;    //No yield, no reward.
+        case 1: reward += 50; break;   //Regular yield, regular reward.
+        case 2: reward += 100; break;   //Large yield, large reward.
+    }
 
-    //Abnormal water chance
-    const float WATER_CHANCE = 0.2;
-
-    //Abnormal nitrogen chance
-    const float NITRO_CHANCE = 0.2;
-
-    //Passive decay
-    const int WATER_DECAY = 2;
-    const int NITRO_DECAY = 2;
-
-    //Variables to track plant statistics
-    
-    int _time; 
-    int _water;
-    int _nitro;
-    /**
-     * 0: Plant death
-     * 1: Plant severe damage
-     * 2: Plant damage
-     * 3: Plant neutral, no growth
-     * 4: Plant growth
-     * 5: Plant fast growth
-    */
-    int _status;
-    int _growth;
-    int _yield;
-
-    public:
-
-        //Constructor for a PlantFarm. Initializes variables to const.
-        PlantFarm() {
-            
-            //Initializes varialbes
-            _time = 0;
-            _growth = 0;
-            _yield = 0;
-            _water = WATER_START;
-            _nitro = NITRO_START;
-            _status = STATUS_START;
-        }
-
-        int getTime() {
-            return _time;
-        }
-
-        int getWater() {
-            return _water;
-        }
-
-        int getNitro() {
-            return _nitro;
-        }
-
-        int getStatus() {
-            return _status;
-        }
-
-        int getGrowth() {
-            return _growth;
-        }
-
-        int getYield() {
-            return _yield;
-        }
-
-        /**
-         * Prints the working variables of PlantFarm. 
-         * Includes all status variables within the State portion of the MDP.
-        */
-        void printStatus() {
-            std::cout << 
-            "\nTime:     " << getTime() <<
-            "\nWater:    " << getWater() <<
-            "\nNitrogen: " << getNitro() <<
-            "\nStatus:   " << getStatus() <<
-            "\nGrowth:   " << getGrowth() <<
-            "\nYield:    " << getYield() <<
-            "\n";
-        }
-
-        /**
-         * Transitions the PlantFarm forward by one time unit.
-         * 
-         * Updates other variables depending on inputs.
-        */
-        bool transition(int waterInput, int nitroInput) {
-            
-            //Updates water and nitrogen variables
-            waterChange(waterInput);
-            nitroChange(nitroInput);
-
-            //Updates the status to reflect the new nitrogen/water levels
-            statusUpdate();
-
-            //Updates the growth and yield
-            growthUpdate();
-            yieldUpdate();
-
-            //Prints the stats
-            printStatus();
-
-            //Increments the time
-            _time += 1;
-
-            //Returns the end signifier if the experiment is complete
-            if (_time == TIME_FINAL) {
-                return 0;
-            } else {
-                return 1;
-            }
-
-        }
-
-    private:
-
-        /**
-         * Updates the water with input, natural decay and variable change
-        */
-        void waterChange(int waterInput) {
-            //Updates water as needed
-            _water += waterInput;
-
-            //Updates water with passive decay
-            _water -= WATER_DECAY;
-
-            //Creates a random number to generate transition changes
-            int random_number = rand() % 100;
-
-            //Determines if the transition function should give a water change
-            if (random_number < (100 * WATER_CHANCE)) {
-                if (random_number % 2) {
-                    _water += 1;
-                } else {
-                    _water -= 1;
-                }
-            }
-
-            //Updates water to fit within bounds
-            if (_water < 0) {
-                _water = 0;
-            } else if (_water > WATER_MAX) {
-                _water = WATER_MAX;
-            }
-        }
-
-        /**
-         * Updates the nitrogen with input, natural decay and variable change
-        */
-        void nitroChange(int nitroInput) {
-            //Updates nitrogen as needed
-            _nitro += nitroInput;
-
-            //Updates nitrogen with passive decay
-            _nitro -= NITRO_DECAY;
-
-            //Creates a random number to generate transition changes
-            int random_number = rand() % 100;
-            std::cout << random_number;
-
-            //Determines if the transition function should give a nitrogen change
-            if (random_number < (100 * NITRO_CHANCE)) {
-                if (random_number % 2) {
-                    _nitro += 1;
-                } else {
-                    _nitro -= 1;
-                }
-            }
-
-            //Updates water to fit within bounds
-            if (_nitro < 0) {
-                _nitro = 0;
-            } else if (_water > WATER_MAX) {
-                _nitro = NITRO_MAX;
-            }
-        }
-
-        /**
-         * Updates the status to reflect the current water and nitrogen levels
-        */
-        void statusUpdate() {
-            //If the water is out of range, reduces status
-            if (_water == 0 || _water == WATER_MAX) {
-                _status -= 2;
-            } else {
-                //Otherwise, increases status slightly
-                _status += 1;
-            }
-
-            //If the water is out of range, reduces status
-            if (_nitro == 4) {
-                _status -= 1; //Too much nitrogen reduces growth
-            } else if (_nitro == 1 && _status > 3) {
-                _status -= 1; //Too little nitrogen reduces growth
-            } else if (_nitro == 0 && _status > 3) {
-                _status = 3; //Far too little nitrogen sets growth to 0
-            } else {
-                _status += 1; //In any other case, slightly increase status
-            }
-
-            //Catch out of bounds statuses
-            if (_status < 0) {
-                _status = 0;
-            } else if (_status > STATUS_MAX) {
-                _status = STATUS_MAX;
-            }
-
-            return;
-        }
-
-        /**
-         * Updates the growth based on the status
-        */
-        void growthUpdate() {
-            switch (_status) {
-                case 1: _growth -= 2;
-                case 2: _growth -= 1;
-                case 4: _growth += 1;
-                case 5: _growth += 2;
-
-                if (_growth < 0) {
-                    _growth = 0;
-                } else if (_growth > GROWTH_MAX) {
-                    _growth = GROWTH_MAX;
-                }
-
-                return;
-            }
-        }
-
-        /**
-         * Updates the plant yield based on the growth
-        */
-        void yieldUpdate() {
-            if (_growth != GROWTH_MAX) {
-                _yield = 0;
-                return;
-            } else {
-                if (_status == 4) {
-                    _yield = 1;
-                } else if (_status == 5) {
-                    _yield = 2;
-                }
-            }
-        }
-
-};
+    return reward;
+}
