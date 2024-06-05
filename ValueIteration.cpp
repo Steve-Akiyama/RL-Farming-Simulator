@@ -26,6 +26,9 @@ ValueIteration::ValueIteration()
         {3, 0}, {3, 1}, {3, 2}, {3, 3}, {3, 4},
         {4, 0}, {4, 1}, {4, 2}, {4, 3}, {4, 4}
     };
+
+    PlantFarm plant_farm;
+    probabilities = plant_farm.getProbabilities();
 }
 
 /**
@@ -89,15 +92,15 @@ void ValueIteration::print_value_function(struct State& state)
 void ValueIteration::print_policy()
 {
     for (auto const& pair : policy) {
-        cout << "{" << 
-            "Time: " << pair.first.time << " | " <<
+        cout << "State: {" << 
+            "T: " << pair.first.time << " | " <<
             "Wat: " << pair.first.water << " | " <<
             "Nit: " << pair.first.nitro << " | " <<
-            "Stat: " << pair.first.status << " | " <<
+            "Sta: " << pair.first.status << " | " <<
             "Grw: " << pair.first.growth << " | " <<
-            "Yld: " << pair.first.yield << " | " <<
-            "V(s): " << value_function[pair] <<
-            "} Action: {" << pair.second.first << ", " << pair.second.second << "}" << endl;
+            "Yld: " << pair.first.yield <<
+            "} Action: {" << pair.second.first << ", " << pair.second.second << "}" << 
+            ", V(s,a): " << value_function[pair] << endl;
     }
 }
 
@@ -140,37 +143,36 @@ double ValueIteration::qvalue(PlantFarm& plant_farm, struct State& S, pair<int, 
     double Q = 0;
 
     // Initialize the probability function, 5 possible next states (s')
-    float* probabilities = plant_farm.getProbabilities();
-    map<State, double> prob_function;    // The probability that each state has to be s'
+    map<State, double> P;    // The probability that each state has to be s'
 
     struct State state1 = S;    // Water + Input - 2, Nitro + Input - 2
     state1.water += A.first - 2;
     state1.nitro += A.second - 2;
-    prob_function[state1] = 1.0 - probabilities[1] - probabilities[0];
+    P[state1] = 1.0 - probabilities[1] - probabilities[0];  // 60% by default
 
     struct State state2 = S;    // Water + Input - 3, Nitro + Input - 2
     state2.water += A.first - 3;
     state2.nitro += A.second - 2;
-    prob_function[state2] = probabilities[0] / 2;
+    P[state2] = probabilities[0] / 2;   // 10% by default
 
     struct State state3 = S;    // Water + Input - 1, Nitro + Input - 2
     state3.water += A.first - 1;
     state3.nitro += A.second - 2;
-    prob_function[state3] = probabilities[0] / 2;
+    P[state3] = probabilities[0] / 2;   // 10% by default
 
     struct State state4 = S;    // Water + Input - 2, Nitro + Input - 3
     state4.water += A.first - 2;
     state4.nitro += A.second - 3;
-    prob_function[state4] = probabilities[1] / 2;
+    P[state4] = probabilities[1] / 2;   // 10% by default
 
     struct State state5 = S;    // Water + Input - 2, Nitro + Input - 1
     state5.water += A.first - 2;
     state5.nitro += A.second - 1;
-    prob_function[state5] = probabilities[1] / 2;
+    P[state5] = probabilities[1] / 2;   // 10% by default
 
-    for (const auto& s_prime : prob_function) {
-        struct State curr_state = s_prime.first;  // denotes s'
-        double prob = s_prime.second; // denotes the transition probability to s'
+    for (const auto& Sprime : P) {
+        struct State curr_state = Sprime.first;  // denotes s'
+        double prob = Sprime.second; // denotes the transition probability to s'
         int best_action_id = get_best_action(curr_state);
 
         Q += prob * value_function[make_pair(curr_state, actions[best_action_id])]; // Current equation: sum(T(s,a,s') * V(s'))
@@ -203,15 +205,15 @@ void ValueIteration::VI()
             for (int action_id = 0; action_id < actions.size(); action_id++) {
                 Action A = actions[action_id];  // Action to be tested
                 
-                PlantFarm* temp_farm = new PlantFarm(*plant_farm);  // Temporary PlantFarm, in order to test an action without progressing to the next state on the real PlantFarm
+                // Test an action using a temporary PlantFarm without progressing to the next state on the real PlantFarm
+                PlantFarm* temp_farm = new PlantFarm(*plant_farm);
                 temp_farm->transition(A.first, A.second);
-
                 cout << "Input {<Water>, <Nitrogen>}: " << "{" << A.first << ", " << A.second << "}" << endl;
 
                 // Calculate the Q-value for the action
                 double Q = qvalue(*temp_farm, *S, A);
 
-                // Check for convergence
+                // Update residual
                 double residual = fabs(value_function[make_pair(*S, A)] - Q);
                 if (residual > max_residual) {
                     max_residual = residual;

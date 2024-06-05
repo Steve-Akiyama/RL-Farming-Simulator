@@ -16,7 +16,7 @@ class ValueIteration
      */
     const bool DEBUG = false;        // Set to true to enable debug messages
 
-    const int MAX_TRIALS = 500;
+    const int MAX_TRIALS = 1000;
     const int S_PRIME_POP = 10;
 
     const double GAMMA = 0.90;      // Discount factor (0 < x < 1)
@@ -42,8 +42,10 @@ class ValueIteration
     // Some of the below code adapted from https://www.geeksforgeeks.org/pair-in-cpp-stl/
     typedef pair<int, int> Action;
 
-    vector<Action> actions;                         // Action space
+    vector<Action> actions;     // Action space
     Action best_action;
+
+    float* probabilities;       // Transition % chances
 
     // Value function (V(s,a))
     map<pair<State, Action>, double> value_function; // the double is the V of that s,a pair
