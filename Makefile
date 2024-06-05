@@ -8,7 +8,7 @@ CXXFLAGS = -std=c++11
 TARGET = PlantFarmApp
 
 # Source files
-SOURCES = Main.cpp PlantFarm.cpp MonteCarlo.cpp ValueIteration.cpp TerminalUI.cpp 
+SOURCES = Main.cpp PlantFarm.cpp MonteCarlo.cpp TerminalUI.cpp 
 
 # Object files
 OBJECTS = $(SOURCES:.cpp=.o)

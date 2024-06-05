@@ -176,8 +176,8 @@ int PlantFarm::reward() {
     int reward = 0;
 
     switch (_status) {
-        case 0: reward += -200; break;
-        case 1: reward += -50; break;
+        case 0: reward += -1000; break;
+        case 1: reward += -100; break;
         case 2: reward += -10; break;
         case 3: reward += 0; break;
         case 4: reward += 5; break;
@@ -186,8 +186,8 @@ int PlantFarm::reward() {
 
     switch (_yield) {
         case 0: reward += 0; break;
-        case 1: reward += 50; break;
-        case 2: reward += 100; break;
+        case 1: reward += 25; break;
+        case 2: reward += 50; break;
     }
 
     return reward;

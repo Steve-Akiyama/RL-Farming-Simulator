@@ -1,0 +1,172 @@
+
+Time: 01
+Water: 4
+Nitrogen: 1
+Status: 1
+Growth: 0
+Yield: 0
+Reward: -100
+
+Time: 01
+Water: 4
+Nitrogen: 1
+Status: 1
+Growth: 0
+Yield: 0
+Reward: -100
+
+Time: 02
+Water: 4
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 02
+Water: 4
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 03
+Water: 2
+Nitrogen: 0
+Status: 3
+Growth: 0
+Yield: 0
+Reward: 0
+
+Time: 03
+Water: 2
+Nitrogen: 0
+Status: 3
+Growth: 0
+Yield: 0
+Reward: 0
+
+Time: 04
+Water: 2
+Nitrogen: 0
+Status: 3
+Growth: 0
+Yield: 0
+Reward: 0
+
+Time: 04
+Water: 2
+Nitrogen: 0
+Status: 3
+Growth: 0
+Yield: 0
+Reward: 0
+
+Time: 05
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 05
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 06
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 06
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 07
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 07
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 08
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 08
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 09
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 09
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 10
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+Time: 10
+Water: 0
+Nitrogen: 0
+Status: 0
+Growth: 0
+Yield: 0
+Reward: -1000
+
+State: [Time: 0, Water: 3, Nitrogen: 3, Status: 3, Growth: 0, Yield: 0] Action: [WaterInput: 3, NitroInput: 1] Q-Value: -114
+State: [Time: 1, Water: 4, Nitrogen: 1, Status: 1, Growth: 0, Yield: 0] Action: [WaterInput: 3, NitroInput: 0] Q-Value: -12
+State: [Time: 2, Water: 4, Nitrogen: 0, Status: 0, Growth: 0, Yield: 0] Action: [WaterInput: 0, NitroInput: 1] Q-Value: -10
+State: [Time: 3, Water: 2, Nitrogen: 0, Status: 3, Growth: 0, Yield: 0] Action: [WaterInput: 2, NitroInput: 0] Q-Value: -11
+State: [Time: 4, Water: 2, Nitrogen: 0, Status: 3, Growth: 0, Yield: 0] Action: [WaterInput: 0, NitroInput: 1] Q-Value: -12
+State: [Time: 5, Water: 0, Nitrogen: 0, Status: 0, Growth: 0, Yield: 0] Action: [WaterInput: 0, NitroInput: 1] Q-Value: -10
+State: [Time: 6, Water: 0, Nitrogen: 0, Status: 0, Growth: 0, Yield: 0] Action: [WaterInput: 0, NitroInput: 0] Q-Value: -8
+State: [Time: 7, Water: 0, Nitrogen: 0, Status: 0, Growth: 0, Yield: 0] Action: [WaterInput: 1, NitroInput: 1] Q-Value: -6
+State: [Time: 8, Water: 0, Nitrogen: 0, Status: 0, Growth: 0, Yield: 0] Action: [WaterInput: 2, NitroInput: 0] Q-Value: -4
+State: [Time: 9, Water: 0, Nitrogen: 0, Status: 0, Growth: 0, Yield: 0] Action: [WaterInput: 0, NitroInput: 0] Q-Value: -2
+Running Every Visit Monte Carlo...

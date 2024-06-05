@@ -112,7 +112,7 @@ void Main::processInput()
     }
     case 3:
     {
-        ValueIteration valueiter;
+        //ValueIteration valueiter;
         std::cout << "Running Value Iteration..." << endl;
 
         break;
@@ -121,6 +121,7 @@ void Main::processInput()
     {
         MonteCarloMDP montecarlo;
         montecarlo.runMonteCarlo(1);
+        montecarlo.printQValues();
         std::cout << "Running Every Visit Monte Carlo..." << endl;
 
         break;
