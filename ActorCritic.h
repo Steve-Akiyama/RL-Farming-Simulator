@@ -1,24 +1,52 @@
-#ifndef ACTOR_CRITIC_H
-#define ACTOR_CRITIC_H
+#include "PlantFarm.h"
+#include <iostream>
+#include <cstdlib>
+#include <cstdlib>  // For rand() function
+#include <ctime>    // For time() function
+#include <string.h>
+#include <cmath>
+#include <iomanip>
 
-#include <vector>
 
 class ActorCritic {
-private:
-    double _actorAlpha; // Learning rate for the actor
-    double _criticAlpha; // Learning rate for the critic
-    std::vector<double> _actorWeights; // Weights for the actor
-    std::vector<double> _criticWeights; // Weights for the critic
 
-    double softmax(double x);
-    int sampleAction(double probability);
-    double dotProduct(const std::vector<double>& vec1, const std::vector<double>& vec2);
+    
+    double gamma = 0.99;
+    double epsilon = 0.2;
+    double alpha = 0.2;
+    bool debug = false;
+    double * V;
+    double * theta;
 
-public:
-    ActorCritic(double actorAlpha, double criticAlpha, const std::vector<double>& actorInitialWeights, const std::vector<double>& criticInitialWeights);
-    std::pair<int, int> selectAction(const std::vector<double>& state);
-    double estimateValue(const std::vector<double>& state);
-    void updateWeights(const std::vector<double>& state, const std::pair<int, int>& action, double reward, const std::vector<double>& nextState);
+    public:
+
+        ActorCritic();
+
+        int runEpisode();
+
+        void setDebug(bool);
+
+    private:
+
+        //Initialize value function
+        void initValueFunct();
+
+        //initialize theta
+        void initTheta();
+
+        //small random value function to init theta
+        double smallRandomValue();
+
+        //Actor action method
+        void getAction(int * action);
+
+        //Critic TD update
+        double TDError(int stateWater, int stateNitro, int reward, int nextWater, int nextNitro);
+        void updateValue(int stateWater, int stateNitro, int TD);
+
+        //Actor policy update
+        void updatePolicy(int currentWater, int currentNitro, int waterInput, int nitroInput, int TD);
+
+    PlantFarm farm;
+
 };
-
-#endif // ACTOR_CRITIC_H

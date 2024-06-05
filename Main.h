@@ -2,15 +2,24 @@
 #define MAIN_H
 
 #include "TerminalUI.h"
-#include "ActorCriticController.h"
+#include "ActorCritic.h"
+#include "ValueIteration.h"
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <cstdio>
+#include <string>
 
 class Main {
+
+    ActorCritic method;
+
 public:
     Main(); // Constructor
     void start(); // Method to start the program
-    ActorCriticController _actorCriticController; 
 
 private:
+    int askForEpisodeCount();
     void printAsciiTitle(); // Method to print the title in ASCII art
     void displayMenu(); // Method to display menu options
     void processInput(); // Method to process user input

@@ -45,6 +45,9 @@ public:
     //Default constructor. Initializes values.
     PlantFarm();
 
+    //Resets PlantFarm to the default state.
+    void reset();
+
     //Getters for variables within the class.
     int getTime();
     int getWater();
@@ -52,6 +55,9 @@ public:
     int getStatus();
     int getGrowth();
     int getYield();
+
+    //Getter for the FINAL TIME constant
+    int getFinalTime();
 
     //Calculates and returns the reward based on the status and yield.
     int reward();

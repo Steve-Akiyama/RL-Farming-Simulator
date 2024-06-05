@@ -1,17 +1,22 @@
 #include <iostream>
+#include <iomanip>
 #include <cstdlib>
 #include "PlantFarm.h"
 
 using namespace std;
 
 PlantFarm::PlantFarm() {
+    reset();
+}
+
+void PlantFarm::reset() {
     //Initializes varialbes
     _time = 0;
-    _growth = 0;
-    _yield = 0;
     _water = WATER_START;
     _nitro = NITRO_START;
     _status = STATUS_START;
+    _growth = 0;
+    _yield = 0;
 }
 
 int PlantFarm::getTime() {
@@ -38,19 +43,23 @@ int PlantFarm::getYield() {
     return _yield;
 }
 
+int PlantFarm::getFinalTime() {
+    return TIME_FINAL;
+}
+
 /**
  * Prints the working variables of PlantFarm. 
  * Includes all status variables within the State portion of the MDP.
 */
 void PlantFarm::printStatus() {
     cout << 
-    "\nTime:     " << getTime() <<
-    "\nWater:    " << getWater() <<
-    "\nNitrogen: " << getNitro() <<
-    "\nStatus:   " << getStatus() <<
-    "\nGrowth:   " << getGrowth() <<
-    "\nYield:    " << getYield() <<
-    "\nReward:   " << reward() <<
+       "T: " << std::setw(2) << std::setfill('0') << getTime() <<
+    " | W: " << getWater() <<
+    " | N: " << getNitro() <<
+    " | S: " << getStatus() <<
+    " | G: " << getGrowth() <<
+    " | Y: " << getYield() <<
+    " | R: " << reward() <<
     "\n";
 }
 
@@ -58,6 +67,9 @@ void PlantFarm::printStatus() {
  * Transitions the PlantFarm forward by one time unit.
  * 
  * Updates other variables depending on inputs.
+ * 
+ * Returns 1 if experiment complete.
+ * Returns 0 otherwise.
 */
 bool PlantFarm::transition(int waterInput, int nitroInput) {
     
@@ -88,7 +100,6 @@ bool PlantFarm::transition(int waterInput, int nitroInput) {
         printStatus(); //Prints the stats
         return 1;
     } else if (_status == 0) {
-        cout << "\nOh no! The plant died.\n";
         printStatus(); //Prints the stats
         return 1;
     } else {
@@ -154,7 +165,7 @@ void PlantFarm::nitroChange(int nitroInput) {
     //Updates water to fit within bounds
     if (_nitro < 0) {
         _nitro = 0;
-    } else if (_water > WATER_MAX) {
+    } else if (_nitro > NITRO_MAX) {
         _nitro = NITRO_MAX;
     }
 }
@@ -257,8 +268,8 @@ int PlantFarm::reward() {
     //Adds reward based on status
     switch (_status) {
         case 0: reward += -1000; break; //Plant died :c
-        case 1: reward += -100; break;  //Huge negative reward for a hugely negative status.
-        case 2: reward += -10; break;   //Negative reward for a negative status.
+        case 1: reward += -50; break;   //Large negative reward for a hugely negative status.
+        case 2: reward += -10; break;    //Negative reward for a negative status.
         case 3: reward += 0; break;     //Here solely for readability, does nothing if the status will not grow or harm the plant.
         case 4: reward += 5; break;     //Small positive reward for a small positive effect.
         case 5: reward += 10; break;    //Decent positive reward for a positive effect
@@ -267,8 +278,8 @@ int PlantFarm::reward() {
     //Adds reward based on yield
     switch (_yield) {
         case 0: reward += 0; break;    //No yield, no reward.
-        case 1: reward += 25; break;   //Regular yield, regular reward.
-        case 2: reward += 50; break;   //Large yield, large reward.
+        case 1: reward += 2500; break;   //Regular yield, regular reward.
+        case 2: reward += 5000; break;   //Large yield, large reward.
     }
 
     return reward;

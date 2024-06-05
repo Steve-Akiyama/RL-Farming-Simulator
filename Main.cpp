@@ -45,9 +45,37 @@ void Main::displayMenu()
     cout << "2. Auto-Run Plant Farm Simulator with auto-input values: \"2 2\"" << endl;
     cout << "3. Run with Value Iteration" << endl;
     cout << "4. Run with Actor-Critic" << endl;
-    cout << "4. Exit" << endl;
+    cout << "5. Run with Actor-Critic (DEBUG MODE)" << endl;
+    cout << "6. Exit" << endl;
     cout << "Choose an option: ";
 }
+
+int Main::askForEpisodeCount()
+{
+    cout << "How many episodes would you like to run? (Integer inputs only!)" << endl;
+
+    string str_choice;
+    cin >> str_choice;
+    
+    // Convert string to integer
+    int choice = 0;
+    try {
+        choice = std::stoi(str_choice);
+    } catch (std::invalid_argument& e) {
+        cout << "Invalid input! Please enter an integer." << endl;
+    } catch (std::out_of_range& e) {
+        cout << "Input out of range! Please enter a smaller number." << endl;
+    }
+
+    // Clear input buffer
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    // Print separator
+    cout << "--------------------" << endl << endl;
+    
+    return choice;
+}
+
 
 void Main::processInput()
 {
@@ -92,6 +120,71 @@ void Main::processInput()
         break;
     }
     case 4:
+    {
+        method.setDebug(false);
+
+        vector<int> episodeRewards;
+        int totalReward = 0;
+
+        ofstream dataFile("episode_rewards.dat");
+
+        int episodeCount = askForEpisodeCount();
+
+        cout << "Running with Actor-Critic with " << episodeCount << " episodes." << endl;
+
+        for (int i = 0; i < episodeCount; i++) {
+            cout << "\n--------\nEpisode: " << i << "\n--------\n";
+            int episodeReward = method.runEpisode(); // Assuming method.runEpisode() returns episode reward
+            episodeRewards.push_back(episodeReward);
+            cout << "\n--------\nEpisode " << i << " concluded. Total reward: " << episodeReward << "\n--------\n";
+            dataFile << i << " " << episodeReward << endl;
+        }
+
+        dataFile.close();
+
+        // Plotting
+        FILE *gnuplotPipe = _popen("gnuplot -persistent", "w");
+        fprintf(gnuplotPipe, "plot 'episode_rewards.dat' with lines title 'Episode Rewards'\n");
+        fflush(gnuplotPipe);
+
+        break;
+    }
+    case 5:
+    {
+        method.setDebug(true);
+
+        vector<int> episodeRewards;
+        int totalReward = 0;
+
+        ofstream dataFile("episode_rewards.dat");
+
+        int episodeCount = askForEpisodeCount();
+
+        cout << "Running with Actor-Critic with " << episodeCount << " episodes." << endl;
+
+        for (int i = 0; i < episodeCount; i++) {
+            cout << "\n--------\nEpisode: " << i << "\n--------\n";
+            int episodeReward = method.runEpisode(); // Assuming method.runEpisode() returns episode reward
+            episodeRewards.push_back(episodeReward);
+            cout << "\n--------\nEpisode " << i << " concluded. Total reward: " << episodeReward << "\n--------\n";
+            dataFile << i << " " << episodeReward << endl;
+            std::string input;
+
+            // Wait for the user to press Enter
+            std::cout << "\nPress Enter to continue...\n";
+            std::getline(std::cin, input);
+        }
+
+        dataFile.close();
+
+        // Plotting
+        FILE *gnuplotPipe = _popen("gnuplot -persistent", "w");
+        fprintf(gnuplotPipe, "plot 'episode_rewards.dat' with lines title 'Episode Rewards'\n");
+        fflush(gnuplotPipe);
+
+        break;
+    }
+    case 6:
     {
         cout << "Exiting..." << endl
              << endl;
