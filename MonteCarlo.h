@@ -35,9 +35,9 @@ struct Action {
 
 class MonteCarloMDP {
 private:
-    map<pair<State, Action>, pair<double, int> > qValues; // Q-values with visit count
-    map<pair<State, Action>, vector<double> > returns; // Returns for each state-action pair
-    vector<tuple<State, Action, double> > episode; // To store the episode
+    map<pair<State, Action>, pair<double, int>> qValues; // Q-values with visit count
+    map<pair<State, Action>, vector<double>> returns; // Returns for each state-action pair
+    vector<tuple<State, Action, double>> episode; // To store the episode
     PlantFarm farm; // Instance of the plant farm problem
 
     double getReward(const State& state, const Action& action);
@@ -52,5 +52,3 @@ public:
 };
 
 #endif // MONTECARLO_H
-
-

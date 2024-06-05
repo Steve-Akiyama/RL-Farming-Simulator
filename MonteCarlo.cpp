@@ -8,8 +8,8 @@ MonteCarloMDP::MonteCarloMDP() {
 
 void MonteCarloMDP::runEpisode() {
     episode.clear();
-    farm.reset(); // Ensure PlantFarm has this method
-    while (farm.getTime() < 10) {
+    farm.reset();
+    while (farm.getTime() < farm.getFinalTime()) {
         State currentState = {farm.getTime(), farm.getWater(), farm.getNitro(), farm.getStatus(), farm.getGrowth(), farm.getYield()};
         Action action = {rand() % 5, rand() % 5};
         double reward = performAction(action);
@@ -94,4 +94,3 @@ double MonteCarloMDP::getReward(const State& state, const Action& action) {
 
     return reward;
 }
-
