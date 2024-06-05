@@ -279,10 +279,11 @@ clock_t ValueIteration::run()
     VI();
 
     // Show the (hopefully) optimal policy
-    cout << endl << "RUNNING WITH POLICY" << endl << endl;
+    cout << endl << "RUNNING WITH POLICY: " << endl << endl;
     run_with_policy();
 
     // Print the policy
+    cout << endl << "COMPLETE POLICY: " << endl << endl;
     print_policy();
 
     // Stop the timer
