@@ -1,4 +1,6 @@
 #include "MonteCarlo.h"
+#include <tuple>
+#include <algorithm>
 
 MonteCarloMDP::MonteCarloMDP() {
     srand(time(nullptr)); // Seed for random number generation
@@ -6,12 +8,12 @@ MonteCarloMDP::MonteCarloMDP() {
 
 void MonteCarloMDP::runEpisode() {
     episode.clear();
-    farm.reset();
+    farm.reset(); // Ensure PlantFarm has this method
     while (farm.getTime() < 10) {
         State currentState = {farm.getTime(), farm.getWater(), farm.getNitro(), farm.getStatus(), farm.getGrowth(), farm.getYield()};
         Action action = {rand() % 5, rand() % 5};
         double reward = performAction(action);
-        episode.push_back(make_tuple(currentState, action, reward));
+        episode.push_back(std::make_tuple(currentState, action, reward));
         if (reward == -100) {
             break;
         }
@@ -20,20 +22,21 @@ void MonteCarloMDP::runEpisode() {
 
 double MonteCarloMDP::performAction(const Action& action) {
     bool continueExperiment = farm.transition(action.waterInput, action.nitroInput);
-    double reward = getReward({farm.getTime(), farm.getWater(), farm.getNitro(), farm.getStatus(), farm.getGrowth(), farm.getYield()}, action);
+    State newState = {farm.getTime(), farm.getWater(), farm.getNitro(), farm.getStatus(), farm.getGrowth(), farm.getYield()};
+    double reward = getReward(newState, action);
     return reward;
 }
 
 void MonteCarloMDP::updateQValues() {
     double totalReward = 0;
-    reverse(episode.begin(), episode.end());
+    std::reverse(episode.begin(), episode.end());
     for (const auto &step : episode) {
         State state;
         Action action;
         double reward;
-        tie(state, action, reward) = step;
+        std::tie(state, action, reward) = step;
         totalReward += reward;
-        auto qValueKey = make_pair(state, action);
+        auto qValueKey = std::make_pair(state, action);
         returns[qValueKey].push_back(totalReward);
         qValues[qValueKey].first += totalReward;
         qValues[qValueKey].second += 1;
@@ -91,3 +94,4 @@ double MonteCarloMDP::getReward(const State& state, const Action& action) {
 
     return reward;
 }
+
