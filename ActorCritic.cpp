@@ -8,9 +8,46 @@ ActorCritic::ActorCritic() {
     // Seed random number generator
     srand(time(0));
 
-    gamma = 0.99;
-    epsilon = 0.2;
-    alpha = 0.2;
+    gamma = 0.85;
+    epsilon = 1;
+    alpha = 0.15;
+}
+
+void ActorCritic::runActorCritic(int episodeCount) {
+
+        std::vector<int> episodeRewards;
+        int totalReward = 0;
+
+        std::ofstream dataFile("episode_rewards.dat");
+
+        std::cout << "Running with Actor-Critic with " << episodeCount << " episodes." << std::endl;
+
+        for (int i = 0; i < episodeCount; i++) {
+            std::cout << "\n--------\nEpisode: " << i << "\n--------\n";
+            int episodeReward = runEpisode(); // Assuming method.runEpisode() returns episode reward
+            episodeRewards.push_back(episodeReward);
+            std::cout << "\n--------\nEpisode " << i << " concluded. Total reward: " << episodeReward << "\n--------\n";
+            dataFile << i << " " << episodeReward << std::endl;
+            std::string input;
+
+            double ep = getEpsilon();
+            setEpsilon(ep * 0.95);
+
+            if (debug) {
+                // Wait for the user to press Enter
+                std::cout << "\nPress Enter to continue...\n";
+                std::getline(std::cin, input);
+            }
+        }
+
+        dataFile.close();
+
+        // Plotting
+        if (!debug) {
+            FILE *gnuplotPipe = _popen("gnuplot -persistent", "w");
+            fprintf(gnuplotPipe, "plot 'episode_rewards.dat' with lines title 'Episode Rewards'\n");
+            fflush(gnuplotPipe);
+        }
 }
 
 int ActorCritic::runEpisode() {
@@ -30,7 +67,7 @@ int ActorCritic::runEpisode() {
     int newWater;
     int newNitro;
     int reward;
-    int TD;
+    double TD;
     int totalReward = 0;
 
     farm.printStatus();
@@ -63,6 +100,10 @@ int ActorCritic::runEpisode() {
         // Calculate TD Error
         TD = TDError(currentWater, currentNitro, reward, newWater, newNitro);
 
+        if (debug) {
+            std::cout << "\nTD Error: " << TD;
+        }
+
         // Update critic's value function
         updateValue(currentWater, currentNitro, TD);
 
@@ -70,6 +111,13 @@ int ActorCritic::runEpisode() {
         updatePolicy(currentWater, currentNitro, action[0], action[1], TD);
 
     } 
+
+    if (debug) {
+        std::cout 
+        << "\n\nEPSILON (Exploration rate): " << epsilon
+        << "\nGAMMA (Future reward decay rate): " << gamma 
+        << "\nALPHA (Learning rate): " << alpha;
+    }
 
     
     if (debug) {
@@ -133,7 +181,7 @@ void ActorCritic::initTheta() {
 
 }
 
-void ActorCritic::updatePolicy(int currentWater, int currentNitro, int waterInput, int nitroInput, int TD) {
+void ActorCritic::updatePolicy(int currentWater, int currentNitro, int waterInput, int nitroInput, double TD) {
     theta[currentWater * 125 + currentNitro * 25 + waterInput * 5 + nitroInput] += alpha * TD;
 }
 
@@ -142,20 +190,12 @@ double ActorCritic::TDError(int stateWater, int stateNitro, int reward, int next
     // Calculate TD error
     double delta = reward + gamma * V[nextWater * 5 + nextNitro] - V[stateWater * 5 + stateNitro];
 
-
-    if (debug) {
-        std::cout 
-        << "\n\nTD ERROR: " << delta
-        << "\nREWARD: " << reward
-        << "\nGAMMA: " << gamma
-        << "\nFUTURE: " << V[nextWater * 5 + nextNitro]
-        << "\nCURRENT: " << V[stateWater * 5 + stateNitro];
-    }
+    
     
     return delta;
 }
 
-void ActorCritic::updateValue(int stateWater, int stateNitro, int TD) {
+void ActorCritic::updateValue(int stateWater, int stateNitro, double TD) {
     // Update value function
     V[stateWater * 5 + stateNitro] += alpha * TD;
 
@@ -210,4 +250,20 @@ double ActorCritic::smallRandomValue() {
 
 void ActorCritic::setDebug(bool val) {
     debug = val;
+}
+
+void ActorCritic::setEpsilon(double newEpsilon) {
+    epsilon = newEpsilon;
+}
+
+void ActorCritic::setAlpha(double newAlpha) {
+    alpha = newAlpha;
+}
+
+double ActorCritic::getAlpha() {
+    return alpha;
+}
+
+double ActorCritic::getEpsilon() {
+    return epsilon;
 }

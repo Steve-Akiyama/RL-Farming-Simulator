@@ -1,19 +1,24 @@
 #include "PlantFarm.h"
 #include <iostream>
-#include <cstdlib>
 #include <cstdlib>  // For rand() function
 #include <ctime>    // For time() function
 #include <string.h>
 #include <cmath>
 #include <iomanip>
+#include <vector>
+#include <fstream>
+#include <cstdio>
+#include <string>
+#include <limits>
+
 
 
 class ActorCritic {
 
     
-    double gamma = 0.99;
-    double epsilon = 0.2;
-    double alpha = 0.2;
+    double gamma;
+    double epsilon;
+    double alpha;
     bool debug = false;
     double * V;
     double * theta;
@@ -22,9 +27,19 @@ class ActorCritic {
 
         ActorCritic();
 
+        void runActorCritic(int);
+
         int runEpisode();
 
         void setDebug(bool);
+
+        void setEpsilon(double);
+
+        double getEpsilon();
+
+        void setAlpha(double);
+
+        double getAlpha();
 
     private:
 
@@ -42,10 +57,10 @@ class ActorCritic {
 
         //Critic TD update
         double TDError(int stateWater, int stateNitro, int reward, int nextWater, int nextNitro);
-        void updateValue(int stateWater, int stateNitro, int TD);
+        void updateValue(int stateWater, int stateNitro, double TD);
 
         //Actor policy update
-        void updatePolicy(int currentWater, int currentNitro, int waterInput, int nitroInput, int TD);
+        void updatePolicy(int currentWater, int currentNitro, int waterInput, int nitroInput, double TD);
 
     PlantFarm farm;
 
