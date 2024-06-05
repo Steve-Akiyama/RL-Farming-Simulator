@@ -12,6 +12,9 @@ using namespace std;
 
 MonteCarloMDP::MonteCarloMDP() {
     srand(time(nullptr)); // Seed for random number generation
+
+    discountFactor = 0.9;
+    learningRate = 0.3;
 }
 
 void MonteCarloMDP::runEpisode() {
@@ -45,13 +48,15 @@ void MonteCarloMDP::updateQValues() {
         Action action;
         double reward;
         tie(state, action, reward) = step;
-        totalReward += reward;
+        totalReward = reward + discountFactor * totalReward;
         auto qValueKey = make_pair(state, action);
-        returns[qValueKey].push_back(totalReward);
-        qValues[qValueKey].first += totalReward;
+        double oldQValue = qValues[qValueKey].first;
+        double newQValue = oldQValue + learningRate * (totalReward - oldQValue);
+        qValues[qValueKey].first = newQValue;
         qValues[qValueKey].second += 1;
     }
 }
+
 
 void MonteCarloMDP::runMonteCarlo(int iterations = 5) {
     for (int i = 0; i < iterations; ++i) {

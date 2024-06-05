@@ -13,6 +13,9 @@ using namespace std;
 
 class MonteCarloMDP {
 
+    double discountFactor;
+    double learningRate;
+
     struct State 
     {
         int time;
