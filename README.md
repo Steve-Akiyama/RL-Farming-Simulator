@@ -10,5 +10,5 @@ Greggory Hickman
 Joseph Murche
 Jamie Parker
 
-Project to solve a "PlantFarm" MDP using value iteration.
+Project to solve a "PlantFarm" MDP using REINFORCE.
 Problem specifications and class implementation can be found in PlantFarm.cpp
