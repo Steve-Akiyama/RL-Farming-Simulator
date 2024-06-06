@@ -92,14 +92,14 @@ void ValueIteration::print_value_function(struct State& state)
 void ValueIteration::print_policy()
 {
     for (auto const& pair : policy) {
-        cout << "State: {" << 
+        cout << "State: {" <<
             "T: " << pair.first.time << " | " <<
             "Wat: " << pair.first.water << " | " <<
             "Nit: " << pair.first.nitro << " | " <<
             "Sta: " << pair.first.status << " | " <<
             "Grw: " << pair.first.growth << " | " <<
             "Yld: " << pair.first.yield <<
-            "} Action: {" << pair.second.first << ", " << pair.second.second << "}" << 
+            "} Action: {" << pair.second.first << ", " << pair.second.second << "}" <<
             ", V(s,a): " << value_function[pair] << endl;
     }
 }
@@ -131,11 +131,11 @@ int ValueIteration::get_best_action(struct State& state)
 
 /**
  * qvalue(PlantFarm& plant_farm, struct State& S, pair<int, int>& A)
- * Inputs: 
+ * Inputs:
  *  plant_farm - used purely to find the probability function
  *  S - the state from the State, Action pair
  *  A - the action from the State, Action pair
- * 
+ *
  * Calculates a State, Action pair's Q value, and updates the value function with it
  */
 double ValueIteration::qvalue(PlantFarm& plant_farm, struct State& S, pair<int, int>& A)
@@ -204,7 +204,7 @@ void ValueIteration::VI()
             // Iterate over all possible actions for this state
             for (int action_id = 0; action_id < actions.size(); action_id++) {
                 Action A = actions[action_id];  // Action to be tested
-                
+
                 // Test an action using a temporary PlantFarm without progressing to the next state on the real PlantFarm
                 PlantFarm* temp_farm = new PlantFarm(*plant_farm);
                 temp_farm->transition(A.first, A.second);
@@ -264,6 +264,31 @@ void ValueIteration::run_with_policy()
         cout << "Input {<Water>, <Nitrogen>}: " << "{" << A.first << ", " << A.second << "}" << endl << endl;
     }
 }
+/**
+ * query_max_trials()
+ * Asks the user how many max trials the algorithm should use
+ */
+int query_max_trials() {
+    char* str_user_input = new char[16];
+
+    cout << "How many episodes would you like to run? (Integer inputs only!)" << endl;
+
+    cin >> str_user_input;
+    cin.ignore();
+
+    // Prevent a crash if the user enters an invalid input
+    if (cin.fail())
+    {
+        cin.clear();
+        return 1;
+    }
+    else {
+        int user_input = atoi(str_user_input);
+        return user_input;
+    }
+
+    return 1;
+}
 
 /**
  * run()
@@ -276,6 +301,9 @@ clock_t ValueIteration::run()
 {
     // Start the timer
     clock_t const timer_start = clock();
+
+    // Query max trials
+    MAX_TRIALS = query_max_trials();
 
     // Value Iteration start
     VI();
