@@ -1,5 +1,9 @@
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <limits>
 #include "Main.h"
-
+#include "TerminalUI.h"
 
 using namespace std;
 
@@ -8,7 +12,8 @@ Main::Main()
     // Constructor - no initialization needed
 }
 
-void Main::printAsciiTitle() {
+void Main::printAsciiTitle()
+{
     // I promise it doesn't look this weird when you run it
     std::cout << "______ _             _    ______                   " << endl;
     std::cout << "| ___ \\ |           | |   |  ___|                  " << endl;
@@ -55,14 +60,16 @@ int Main::askForEpisodeCount()
 
     string str_choice;
     cin >> str_choice;
-    
+
     // Convert string to integer
     int choice = 0;
     try {
         choice = std::stoi(str_choice);
-    } catch (std::invalid_argument& e) {
+    }
+    catch (std::invalid_argument& e) {
         std::cout << "Invalid input! Please enter an integer." << endl;
-    } catch (std::out_of_range& e) {
+    }
+    catch (std::out_of_range& e) {
         std::cout << "Input out of range! Please enter a smaller number." << endl;
     }
 
@@ -71,7 +78,7 @@ int Main::askForEpisodeCount()
 
     // Print separator
     std::cout << "--------------------" << endl << endl;
-    
+
     return choice;
 }
 
@@ -79,7 +86,7 @@ int Main::askForEpisodeCount()
 void Main::processInput()
 {
     // Take user input
-    char *str_choice = new char[1];
+    char* str_choice = new char[1];
     cin >> str_choice;
     int choice = (int)(str_choice[0]) - 48; // Input is converted from string to int so that the program will continue to work even if the user enters a non-number
 
@@ -87,20 +94,21 @@ void Main::processInput()
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     // Print separator
-    std::cout << "--------------------" << endl
-         << endl;
+    cout << "--------------------" << endl << endl;
 
     // Handles choice inputs for terminal UI, exit, error handling
     switch (choice)
     {
     case 1:
     {
+        cout << "Running Manual Input..." << endl;
         TerminalUI terminalUI;
         terminalUI.start();
         break;
     }
     case 2:
     {
+        cout << "Running Auto-Input (2 2)..." << endl;
         PlantFarm plantfarm;
         int water_input = 2;
         int nitro_input = 2;
@@ -113,16 +121,18 @@ void Main::processInput()
     }
     case 3:
     {
+        cout << "Running Value Iteration..." << endl;
         ValueIteration valueiter;
-        std::cout << "Running Value Iteration..." << endl;
-
+        clock_t time_elapsed = valueiter.run(); // Run value iteration
+        cout << fixed << setprecision(6)
+            << "Time Elapsed: " << ((double)(time_elapsed) / 1000000) << " seconds" << endl;
         break;
     }
     case 4:
     case 5:
     {
         bool debugMode = (choice == 5); // choice is the variable holding the user's choice
-        
+
         method.setDebug(debugMode); // Sets debug mode on or off depending on selection
 
         int episodeCount = askForEpisodeCount(); // Asks for episode count
@@ -136,7 +146,7 @@ void Main::processInput()
     case 6:
     {
         std::cout << "Exiting..." << endl
-             << endl;
+            << endl;
         exit(0);
     }
     default:

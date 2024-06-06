@@ -53,5 +53,6 @@
 =======
 >>>>>>> Stashed changes
         "xutility": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "enabled"
 }
