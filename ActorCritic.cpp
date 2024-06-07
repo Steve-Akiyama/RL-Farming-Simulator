@@ -23,6 +23,14 @@ void ActorCritic::runActorCritic(int episodeCount) {
         std::cout << "Running with Actor-Critic with " << episodeCount << " episodes." << std::endl;
 
         for (int i = 1; i <= episodeCount; i++) {
+
+            
+            if (i > (episodeCount * 0.9)) {
+                //epsilon = 0;
+            }
+            
+            
+
             if (i == episodeCount) {
                 debug = true;
             }
@@ -41,7 +49,7 @@ void ActorCritic::runActorCritic(int episodeCount) {
                 setEpsilon(ep * 1.01);
             } else {
                 double ep = getEpsilon();
-                setEpsilon(ep * .95);
+                setEpsilon(ep * 0.95);
             }
 
             if (debug) {
