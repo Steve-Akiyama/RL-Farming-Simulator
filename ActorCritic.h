@@ -1,4 +1,5 @@
 #include "PlantFarm.h"
+#include "DataPlot.cpp"
 #include <iostream>
 #include <cstdlib>  // For rand() function
 #include <ctime>    // For time() function
@@ -15,13 +16,24 @@
 
 class ActorCritic {
 
-    
+    //Hyperparameters
     double gamma;
     double epsilon;
     double alpha;
+
+    //Hyperparameter adaptivity
+    double epsilonDecay; //Decays epsilon after every episode (0.95 means epsilon loses 5% of its current value)
+    double epsilonStop;  //Sets epsilon to zero after a percent of the episodes (0.9 means the last 10% will have epsilon = 0)
+
+    //Debug prints out additional info, waits for user input between episodes
     bool debug = false;
+    
+    //Data constructs for Actor-Critic
     double * V;
     double * theta;
+
+    //Data file output
+    std::string outputFile = "episode_rewards.dat";
 
     public:
 

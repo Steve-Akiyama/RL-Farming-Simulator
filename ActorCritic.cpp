@@ -11,38 +11,47 @@ ActorCritic::ActorCritic() {
     gamma = 0.85; //Discounted reward
     epsilon = 1; //Exploration rate
     alpha = 0.15; //Learning rate
+
+    epsilonDecay = 0.99;
+    epsilonStop = 0.9;
 }
 
 void ActorCritic::runActorCritic(int episodeCount) {
 
+        //Setting up a vector for episode rewards
         std::vector<int> episodeRewards;
-        int totalReward = 0;
 
-        std::ofstream dataFile("episode_rewards.dat");
+        std::ofstream dataFile(outputFile);
 
         std::cout << "Running with Actor-Critic with " << episodeCount << " episodes." << std::endl;
 
         for (int i = 1; i <= episodeCount; i++) {
+
+            if (i > (episodeCount * epsilonStop)) {
+                epsilon = 0;
+            }
+
             if (i == episodeCount) {
                 debug = true;
             }
 
+            //Prints episode information
             std::cout << "\n--------\nEpisode: " << i << "\n--------\n";
-            int episodeReward = runEpisode(); // Assuming method.runEpisode() returns episode reward
+
+            // Runs the episode and stores the reward
+            int episodeReward = runEpisode(); 
             episodeRewards.push_back(episodeReward);
+
+            //Prints final information
             std::cout << "\n--------\nEpisode " << i << " concluded. Total reward: " << episodeReward << "\n--------\n";
+            
+            //Stores data to the file
             dataFile << i << " " << episodeReward << std::endl;
             std::string input;
 
-            totalReward += episodeReward;
-
-            if (episodeReward < (totalReward / i)) {
-                double ep = getEpsilon();
-                setEpsilon(ep * 1.01);
-            } else {
-                double ep = getEpsilon();
-                setEpsilon(ep * .95);
-            }
+            //Epsilon decay
+            double ep = getEpsilon();
+            setEpsilon(ep * epsilonDecay);
 
             if (debug) {
                 // Wait for the user to press Enter
@@ -57,6 +66,10 @@ void ActorCritic::runActorCritic(int episodeCount) {
         FILE *gnuplotPipe = _popen("gnuplot -persistent", "w");
         fprintf(gnuplotPipe, "plot 'episode_rewards.dat' with lines title 'Episode Rewards'\n");
         fflush(gnuplotPipe);
+
+        //Plots and analyzes data
+        DataPlot analysis = DataPlot(outputFile, epsilonStop);
+        analysis.process();
 }
 
 int ActorCritic::runEpisode() {
