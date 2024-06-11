@@ -91,7 +91,9 @@ void ValueIteration::print_value_function(struct State& state)
  */
 void ValueIteration::print_policy()
 {
-    for (auto const& pair : policy) {
+    // Print policy
+    for (auto const& pair : policy)
+    {
         cout << "State: {" <<
             "T: " << pair.first.time << " | " <<
             "Wat: " << pair.first.water << " | " <<
@@ -102,6 +104,25 @@ void ValueIteration::print_policy()
             "} Action: {" << pair.second.first << ", " << pair.second.second << "}" <<
             ", V(s,a): " << value_function[pair] << endl;
     }
+
+    // Print reward data
+    cout << "Rewards Data: " << endl;
+
+    for (int i = 0; i < MAX_TRIALS; i++)
+    {
+        cout << rewards_data[i] << ", ";
+    }
+
+    // Print residual data
+    cout << endl << endl << "Residual Data: " << endl;
+
+    for (int i = 0; i < MAX_TRIALS; i++)
+    {
+        cout << max_residual_data[i] << ", ";
+    }
+
+    cout << endl << endl;
+
 }
 
 /**
@@ -175,11 +196,11 @@ double ValueIteration::qvalue(PlantFarm& plant_farm, struct State& S, pair<int, 
         double prob = Sprime.second; // denotes the transition probability to s'
         int best_action_id = get_best_action(curr_state);
 
-        Q += prob * value_function[make_pair(curr_state, actions[best_action_id])]; // Current equation: sum(T(s,a,s') * V(s'))
+        Q += prob * (plant_farm.reward() + GAMMA * value_function[make_pair(curr_state, actions[best_action_id])]); // Current equation: sum(T(s,a,s') * V(s'))
     }
 
-    Q *= GAMMA; // Current equation: gamma * sum(T(s,a,s') * V(s'))
-    Q += plant_farm.reward(); // Current equation: R(s) + gamma * sum(T(s,a,s') * V(s'))
+    //Q *= GAMMA; // Current equation: gamma * sum(T(s,a,s') * V(s'))
+    //Q += plant_farm.reward(); // Current equation: R(s) + gamma * sum(T(s,a,s') * V(s'))
 
     return Q;
 }
@@ -191,6 +212,10 @@ double ValueIteration::qvalue(PlantFarm& plant_farm, struct State& S, pair<int, 
  */
 void ValueIteration::VI()
 {
+    // Setup rewards_data
+    rewards_data = new int[MAX_TRIALS + 1];
+    max_residual_data = new double[MAX_TRIALS + 1];
+
     // Value Iteration start
     for (int trial = 0; trial < MAX_TRIALS; trial++) {
         PlantFarm* plant_farm = new PlantFarm();    // Fresh new PlantFarm each trial
@@ -198,8 +223,12 @@ void ValueIteration::VI()
         double max_residual = 0.0;
         bool trial_over = false;
 
+        int best_action = 0;
+        // double best_action_value = 0.0;
+
         while (!trial_over) {
             State* S = init_current_state(*plant_farm);
+            double Q = 0.0;
 
             // Iterate over all possible actions for this state
             for (int action_id = 0; action_id < actions.size(); action_id++) {
@@ -211,34 +240,37 @@ void ValueIteration::VI()
                 cout << "Input {<Water>, <Nitrogen>}: " << "{" << A.first << ", " << A.second << "}" << endl;
 
                 // Calculate the Q-value for the action
-                double Q = qvalue(*temp_farm, *S, A);
+                Q = qvalue(*temp_farm, *S, A);
 
-                // Update residual
-                double residual = fabs(value_function[make_pair(*S, A)] - Q);
-                if (residual > max_residual) {
-                    max_residual = residual;
-                }
-
+                // Update the value function
                 value_function[make_pair(*S, A)] = Q;
             }
 
-            // Update the policy & value function
+            // Update residual
+            Action best_A = actions[get_best_action(*S)];
+            double residual = fabs(Q - value_function[make_pair(*S, best_A)]);
+            cout << "Q: " << Q << endl;
+            cout << "V(s'): " << value_function[make_pair(*S, best_A)] << endl;
+            cout << "Residual: " << residual << endl;
+            if (residual > max_residual) {
+                max_residual = residual;
+            }
+
+            // Update the policy
             int best_action_id = get_best_action(*S);
             policy[*S] = actions[best_action_id];
-
-            if (max_residual < EPSILON) {
-                trial_over = true;
-            }
 
             // Perform the best action
             trial_over = plant_farm->transition(actions[best_action_id].first, actions[best_action_id].second);
             cout << "Input {<Water>, <Nitrogen>}: " << "{" << actions[best_action_id].first << ", " << actions[best_action_id].second << "}" << endl;
         }
 
-        cout << "Max Residual: " << max_residual << endl;
+        rewards_data[trial] = plant_farm->reward();     // Now that the trial ended, log final reward data
+        max_residual_data[trial] = max_residual;
+
         if (max_residual < EPSILON) {
             cout << "Convergence!" << endl;
-            //break;
+            break;
         }
     }
 
