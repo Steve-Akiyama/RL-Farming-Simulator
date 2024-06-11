@@ -7,13 +7,13 @@
 #include <map>
 #include <algorithm>
 #include <ctime>
-#include <utility>  // for std::pair
+#include <utility>  // for std::pair and std::make_pair
+#include <tuple>  // for std::tie
 
 using namespace std;
 
 class MonteCarloMDP 
 {
-
     double discountFactor;
     double learningRate;
 

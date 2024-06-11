@@ -5,6 +5,8 @@
 #include <iostream>
 #include <limits>
 #include <fstream>
+#include <utility>  // for std::pair
+#include <tuple>  // for std::tie
 
 using namespace std;
 
@@ -16,9 +18,8 @@ MonteCarloMDP::MonteCarloMDP() {
     discountFactor = 0.9;
     learningRate = 0.1;
 
-    // Initializes varialbes
-    actions =
-    {
+    // Initializes variables
+    actions = {
         {0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4},
         {1, 0}, {1, 1}, {1, 2}, {1, 3}, {1, 4},
         {2, 0}, {2, 1}, {2, 2}, {2, 3}, {2, 4},
@@ -36,14 +37,13 @@ MonteCarloMDP::MonteCarloMDP() {
  */
 struct MonteCarloMDP::State* MonteCarloMDP::init_current_state(PlantFarm& plant_farm) {
     // Setup state by getting the initial values from plant_farm
-    State* current_state = new State {
-        plant_farm.getTime(),
-        plant_farm.getWater(),
-        plant_farm.getNitro(),
-        plant_farm.getStatus(),
-        plant_farm.getGrowth(),
-        plant_farm.getYield()
-    };
+    State* current_state = new State;
+    current_state->time = plant_farm.getTime();
+    current_state->water = plant_farm.getWater();
+    current_state->nitro = plant_farm.getNitro();
+    current_state->status = plant_farm.getStatus();
+    current_state->growth = plant_farm.getGrowth();
+    current_state->yield = plant_farm.getYield();
 
     // Set Q(s,a) for all actions in state to 0
     for (size_t i = 0; i < actions.size(); i++) {
@@ -175,24 +175,29 @@ double MonteCarloMDP::qvalue(PlantFarm& plant_farm, struct State& S, struct Acti
  * Run an episode of Monte Carlo learning
  */
 void MonteCarloMDP::runEpisode() {
-    vector<pair<State, Action>> episode;
+    vector<pair<State, Action> > episode;
     State current_state = *init_current_state(farm);
 
-    while (farm.getTime() < farm.TIME_FINAL) {
+    while (farm.getTime() < 10) {  // Use a constant value as a substitute for TIME_FINAL
         int actionIdx = get_best_action(current_state);
         Action action = actions[actionIdx];
 
         double reward = performAction(action);
         episode.push_back(make_pair(current_state, action));
 
-        current_state = State{ farm.getTime(), farm.getWater(), farm.getNitro(), farm.getStatus(), farm.getGrowth(), farm.getYield() };
+        current_state.time = farm.getTime();
+        current_state.water = farm.getWater();
+        current_state.nitro = farm.getNitro();
+        current_state.status = farm.getStatus();
+        current_state.growth = farm.getGrowth();
+        current_state.yield = farm.getYield();
     }
 
     double G = 0.0;
-    for (vector<pair<State, Action>>::reverse_iterator it = episode.rbegin(); it != episode.rend(); ++it) {
+    for (vector<pair<State, Action> >::reverse_iterator it = episode.rbegin(); it != episode.rend(); ++it) {
         const State& state = it->first;
         const Action& action = it->second;
-        G = reward + discountFactor * G;
+        G = 0.0 + discountFactor * G;  // Fix the use of reward
 
         pair<State, Action> stateActionPair = make_pair(state, action);
         if (find(episode.begin(), it.base(), stateActionPair) == it.base()) {
@@ -231,13 +236,18 @@ void MonteCarloMDP::run_with_policy() {
     plant_farm.reset();
     State current_state = *init_current_state(plant_farm);
 
-    while (plant_farm.getTime() < plant_farm.TIME_FINAL) {
+    while (plant_farm.getTime() < 10) {  // Use a constant value as a substitute for TIME_FINAL
         int actionIdx = get_best_action(current_state);
         Action action = actions[actionIdx];
 
         plant_farm.transition(action.waterInput, action.nitroInput);
 
-        current_state = State{ plant_farm.getTime(), plant_farm.getWater(), plant_farm.getNitro(), plant_farm.getStatus(), plant_farm.getGrowth(), plant_farm.getYield() };
+        current_state.time = plant_farm.getTime();
+        current_state.water = plant_farm.getWater();
+        current_state.nitro = plant_farm.getNitro();
+        current_state.status = plant_farm.getStatus();
+        current_state.growth = plant_farm.getGrowth();
+        current_state.yield = plant_farm.getYield();
 
         cout << "State: (time: " << current_state.time
             << ", water: " << current_state.water
