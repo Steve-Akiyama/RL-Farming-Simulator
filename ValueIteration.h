@@ -16,7 +16,7 @@ class ValueIteration
      */
     const bool DEBUG = false;        // Set to true to enable debug messages
 
-    const double GAMMA = 0.30;       // Discount factor (0 < x < 1)
+    const double GAMMA = 0.70;       // Discount factor (0 < x < 1)
     const double EPSILON = 0.1;
 
     int MAX_TRIALS = 1;
@@ -56,7 +56,7 @@ class ValueIteration
     float* probabilities;       // Transition % chances
 
     // Value function (V(s,a))
-    map<pair<State, Action>, double> value_function; // the double is the V of that s,a pair
+    map<State, double> value_function; // the double is the V of that s,a pair
 
     // Policy 
     map<State, Action> policy;  // List of mapped state, action pairs
@@ -70,15 +70,15 @@ public:
 
     State* init_current_state(PlantFarm& plant_farm);
 
-    void print_value_function(State& state);
+    void print_state_info(State& state);
 
     void print_policy();
 
-    int get_best_action(State& state);
+    // int get_best_action(State& state);
 
-    double qvalue(PlantFarm& plant_farm, State& state, Action& action);
+    double qvalue(PlantFarm& plant_farm, State& S, int A_id);
 
-    void VI();
+void VI();
 
     void run_with_policy();
 
