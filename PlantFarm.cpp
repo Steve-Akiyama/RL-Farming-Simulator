@@ -47,6 +47,15 @@ int PlantFarm::getFinalTime() {
     return TIME_FINAL;
 }
 
+float *PlantFarm::getProbabilities()
+{
+    float *prob = new float[2];
+    prob[0] = WATER_CHANCE;
+    prob[1] = NITRO_CHANCE;
+
+    return prob;
+}
+
 /**
  * Prints the working variables of PlantFarm. 
  * Includes all status variables within the State portion of the MDP.

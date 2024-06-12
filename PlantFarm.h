@@ -59,6 +59,8 @@ public:
     //Getter for the FINAL TIME constant
     int getFinalTime();
 
+    float *getProbabilities();
+
     //Calculates and returns the reward based on the status and yield.
     int reward();
 
