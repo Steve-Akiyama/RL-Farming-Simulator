@@ -12,7 +12,7 @@
 
 using namespace std;
 
-MonteCarloMDP::MonteCarloMDP() : GAMMA(0.9), EPSILON(0.1), MAX_EPISODES(10000) {
+MonteCarloMDP::MonteCarloMDP() : GAMMA(0.3), EPSILON(0.1), MAX_EPISODES(10000) {
     actions = {
         {0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4},
         {1, 0}, {1, 1}, {1, 2}, {1, 3}, {1, 4},
@@ -42,20 +42,6 @@ struct MonteCarloMDP::State* MonteCarloMDP::init_current_state(PlantFarm& plant_
     }
 
     return current_state;
-}
-
-void MonteCarloMDP::print_policy() {
-    for (auto const& pair : policy) {
-        cout << "State: {" <<
-            "T: " << pair.first.time << " | " <<
-            "Wat: " << pair.first.water << " | " <<
-            "Nit: " << pair.first.nitro << " | " <<
-            "Sta: " << pair.first.status << " | " <<
-            "Grw: " << pair.first.growth << " | " <<
-            "Yld: " << pair.first.yield <<
-            "} Action: {" << pair.second.first << ", " << pair.second.second << "}" <<
-            ", Q(s,a): " << value_function[make_pair(pair.first, pair.second)] << endl;
-    }
 }
 
 int MonteCarloMDP::get_best_action(struct State& state) {
@@ -144,9 +130,84 @@ void MonteCarloMDP::runEpisode() {
 }
 
 void MonteCarloMDP::runMonteCarlo(int episodes) {
+    ofstream outFile("output.dat");
+    if (!outFile.is_open()) {
+        cerr << "Unable to open file for writing" << endl;
+        return;
+    }
+
+    double best_reward = -numeric_limits<double>::infinity();
+    vector<pair<State, Action>> best_episode;
+
     for (int i = 0; i < episodes; ++i) {
         farm.reset();
-        runEpisode();
+        vector<pair<State, Action>> episode;
+        State current_state = *init_current_state(farm);
+
+        while (farm.getTime() < 10) {
+            int actionIdx = get_best_action(current_state);
+            Action action = actions[actionIdx];
+
+            farm.transition(action.first, action.second);
+            episode.push_back(make_pair(current_state, action));
+
+            current_state.time = farm.getTime();
+            current_state.water = farm.getWater();
+            current_state.nitro = farm.getNitro();
+            current_state.status = farm.getStatus();
+            current_state.growth = farm.getGrowth();
+            current_state.yield = farm.getYield();
+        }
+
+        double G = 0.0;
+        for (vector<pair<State, Action>>::reverse_iterator it = episode.rbegin(); it != episode.rend(); ++it) {
+            const State& state = it->first;
+            const Action& action = it->second;
+            G = farm.reward() + GAMMA * G;
+
+            pair<State, Action> stateActionPair = make_pair(state, action);
+            returns[stateActionPair].push_back(G);
+            value_function[stateActionPair] = accumulate(returns[stateActionPair].begin(), returns[stateActionPair].end(), 0.0) / returns[stateActionPair].size();
+        }
+
+        if (G > best_reward) {
+            best_reward = G;
+            best_episode = episode;
+        }
+
+        // Output all training data to output.dat
+        for (const auto& entry : value_function) {
+            const State& state = entry.first.first;
+            const Action& action = entry.first.second;
+            double value = entry.second;
+
+            outFile << "Time: " << state.time
+                    << " | Water: " << state.water
+                    << " | Nitrogen: " << state.nitro
+                    << " | Status: " << state.status
+                    << " | Growth: " << state.growth
+                    << " | Yield: " << state.yield
+                    << " | Action: (water: " << action.first
+                    << ", nitrogen: " << action.second << ")"
+                    << " | Q-value: " << value
+                    << " | Reward: " << farm.reward() << endl;
+        }
+    }
+    outFile.close();
+
+    // Print the best episode
+    for (const auto& step : best_episode) {
+        const State& state = step.first;
+        const Action& action = step.second;
+
+        cout << "T: " << state.time
+             << " | W: " << state.water
+             << " | N: " << state.nitro
+             << " | S: " << state.status
+             << " | G: " << state.growth
+             << " | Y: " << state.yield
+             << " | R: " << farm.reward() << endl;
+        cout << "<Water> <Nitrogen> Input: " << action.first << " " << action.second << endl;
     }
 }
 
@@ -161,38 +222,20 @@ void MonteCarloMDP::run_with_policy() {
 
         plant_farm.transition(action.first, action.second);
 
+        cout << "T: " << current_state->time
+            << " | W: " << current_state->water
+            << " | N: " << current_state->nitro
+            << " | S: " << current_state->status
+            << " | G: " << current_state->growth
+            << " | Y: " << current_state->yield
+            << " | R: " << plant_farm.reward() << endl;
+        cout << "<Water> <Nitrogen> Input: " << action.first << " " << action.second << endl;
+
         current_state->time = plant_farm.getTime();
         current_state->water = plant_farm.getWater();
         current_state->nitro = plant_farm.getNitro();
         current_state->status = plant_farm.getStatus();
         current_state->growth = plant_farm.getGrowth();
         current_state->yield = plant_farm.getYield();
-
-        cout << "Time: " << current_state->time
-            << " | Water: " << current_state->water
-            << " | Nitrogen: " << current_state->nitro
-            << " | Status: " << current_state->status
-            << " | Growth: " << current_state->growth
-            << " | Yield: " << current_state->yield
-            << " | Action: (" << action.first << ", " << action.second << ")" 
-            << " | Reward: " << plant_farm.reward() << endl;
-    }
-}
-
-void MonteCarloMDP::printBestPolicy() {
-    for (const auto& entry : policy) {
-        const State& state = entry.first;
-        const Action& action = entry.second;
-
-        cout << "State: (time: " << state.time
-            << " | water: " << state.water
-            << " | nitrogen: " << state.nitro
-            << " | status: " << state.status
-            << " | growth: " << state.growth
-            << " | yield: " << state.yield
-            << ") Action: (water: " << action.first
-            << ", nitrogen: " << action.second << ")"
-            << " | Q-value: " << value_function[make_pair(state, action)]
-            << " | Reward: " << farm.reward() << endl;
     }
 }
