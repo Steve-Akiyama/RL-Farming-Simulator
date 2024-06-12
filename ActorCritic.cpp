@@ -8,12 +8,12 @@ ActorCritic::ActorCritic() {
     // Seed random number generator
     srand(time(0));
 
-    gamma = 0.85; //Discounted reward
+    gamma = 0.6; //Discounted reward
     epsilon = 1; //Exploration rate
-    alpha = 0.15; //Learning rate
+    alpha = 0.1; //Learning rate
 
-    epsilonDecay = 0.99;
-    epsilonStop = 0.9;
+    epsilonDecay = 0.999;
+    epsilonStop = 0.8;
 }
 
 void ActorCritic::runActorCritic(int episodeCount) {
