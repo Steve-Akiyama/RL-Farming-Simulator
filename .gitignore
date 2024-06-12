@@ -3,5 +3,4 @@ PlantFarm.exe
 .vscode/settings.json
 PlantFarmApp.exe
 *.dat
-PlantFarmApp.exe
-episode_rewards.dat
+*.exe
