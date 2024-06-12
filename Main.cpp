@@ -106,7 +106,7 @@ void Main::processInput() {
         case 4: {
             std::cout << "Running Every Visit Monte Carlo..." << endl;
             MonteCarloMDP montecarlo;
-            montecarlo.runMonteCarlo(5000); // Train for 10,000 episodes
+            montecarlo.runMonteCarlo(1000); // Train for 10,000 episodes
             montecarlo.run_with_policy(); // Run with the best policy found
             break;
         }

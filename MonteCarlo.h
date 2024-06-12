@@ -15,7 +15,10 @@ class MonteCarloMDP
 
     double GAMMA;       // Discount factor (0 < x < 1)
     double EPSILON;     // Greedy epsilon
+    double ALPHA;       // Learning rate
     int MAX_EPISODES;   // Number of episodes for training
+    double EPSILON_DECAY; // Decay rate for epsilon
+    double EPSILON_STOP;  // Minimum epsilon value
 
     // State space
     struct State
@@ -70,6 +73,8 @@ public:
     int get_best_action(State& state);
 
     double qvalue(PlantFarm& plant_farm, State& state, Action& action);
+
+    int get_reward(const State& state); // Add get_reward function here
 
     void runEpisode();
 

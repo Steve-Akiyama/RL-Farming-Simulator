@@ -12,7 +12,7 @@
 
 using namespace std;
 
-MonteCarloMDP::MonteCarloMDP() : GAMMA(0.3), EPSILON(0.1), MAX_EPISODES(10000) {
+MonteCarloMDP::MonteCarloMDP() : GAMMA(0.95), EPSILON(1.0), ALPHA(0.1), MAX_EPISODES(20000), EPSILON_DECAY(0.99), EPSILON_STOP(0.01) {
     actions = {
         {0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4},
         {1, 0}, {1, 1}, {1, 2}, {1, 3}, {1, 4},
@@ -45,17 +45,22 @@ struct MonteCarloMDP::State* MonteCarloMDP::init_current_state(PlantFarm& plant_
 }
 
 int MonteCarloMDP::get_best_action(struct State& state) {
-    int best_action_id = 0;
-    double best_action_value = -numeric_limits<double>::infinity();
+    if ((rand() / double(RAND_MAX)) < EPSILON) {
+        // Exploration: Choose a random action
+        return rand() % actions.size();
+    } else {
+        // Exploitation: Choose the best action
+        int best_action_id = 0;
+        double best_action_value = -numeric_limits<double>::infinity();
 
-    for (int i = 0; i < actions.size(); i++) {
-        if (best_action_value < value_function[make_pair(state, actions[i])]) {
-            best_action_value = value_function[make_pair(state, actions[i])];
-            best_action_id = i;
+        for (int i = 0; i < actions.size(); i++) {
+            if (best_action_value < value_function[make_pair(state, actions[i])]) {
+                best_action_value = value_function[make_pair(state, actions[i])];
+                best_action_id = i;
+            }
         }
+        return best_action_id;
     }
-
-    return best_action_id;
 }
 
 double MonteCarloMDP::qvalue(PlantFarm& plant_farm, struct State& S, Action& A) {
@@ -98,6 +103,27 @@ double MonteCarloMDP::qvalue(PlantFarm& plant_farm, struct State& S, Action& A) 
     return Q;
 }
 
+int MonteCarloMDP::get_reward(const State& state) {
+    int reward = 0;
+
+    switch (state.status) {
+        case 0: reward += -100; break;
+        case 1: reward += -20; break;
+        case 2: reward += -10; break;
+        case 3: reward += 0; break;
+        case 4: reward += 10; break;
+        case 5: reward += 20; break;
+    }
+
+    switch (state.yield) {
+        case 0: reward += 0; break;
+        case 1: reward += 25; break;
+        case 2: reward += 50; break;
+    }
+
+    return reward;
+}
+
 void MonteCarloMDP::runEpisode() {
     vector<pair<State, Action>> episode;
     State current_state = *init_current_state(farm);
@@ -115,17 +141,26 @@ void MonteCarloMDP::runEpisode() {
         current_state.status = farm.getStatus();
         current_state.growth = farm.getGrowth();
         current_state.yield = farm.getYield();
+
+        // Additional logging
+        cout << "Episode: Action taken: (" << action.first << ", " << action.second << "), "
+             << "State: Time=" << current_state.time
+             << ", Water=" << current_state.water
+             << ", Nitro=" << current_state.nitro
+             << ", Status=" << current_state.status
+             << ", Growth=" << current_state.growth
+             << ", Yield=" << current_state.yield << endl;
     }
 
     double G = 0.0;
     for (vector<pair<State, Action>>::reverse_iterator it = episode.rbegin(); it != episode.rend(); ++it) {
         const State& state = it->first;
         const Action& action = it->second;
-        G = farm.reward() + GAMMA * G;
+        G = get_reward(state) + GAMMA * G;
 
         pair<State, Action> stateActionPair = make_pair(state, action);
         returns[stateActionPair].push_back(G);
-        value_function[stateActionPair] = accumulate(returns[stateActionPair].begin(), returns[stateActionPair].end(), 0.0) / returns[stateActionPair].size();
+        value_function[stateActionPair] = (1 - ALPHA) * value_function[stateActionPair] + ALPHA * G;
     }
 }
 
@@ -163,11 +198,11 @@ void MonteCarloMDP::runMonteCarlo(int episodes) {
         for (vector<pair<State, Action>>::reverse_iterator it = episode.rbegin(); it != episode.rend(); ++it) {
             const State& state = it->first;
             const Action& action = it->second;
-            G = farm.reward() + GAMMA * G;
+            G = get_reward(state) + GAMMA * G;
 
             pair<State, Action> stateActionPair = make_pair(state, action);
             returns[stateActionPair].push_back(G);
-            value_function[stateActionPair] = accumulate(returns[stateActionPair].begin(), returns[stateActionPair].end(), 0.0) / returns[stateActionPair].size();
+            value_function[stateActionPair] = (1 - ALPHA) * value_function[stateActionPair] + ALPHA * G;
         }
 
         if (G > best_reward) {
@@ -190,7 +225,13 @@ void MonteCarloMDP::runMonteCarlo(int episodes) {
                     << " | Action: (water: " << action.first
                     << ", nitrogen: " << action.second << ")"
                     << " | Q-value: " << value
-                    << " | Reward: " << farm.reward() << endl;
+                    << " | Reward: " << get_reward(state) << endl;
+        }
+
+        // Decay EPSILON
+        EPSILON *= EPSILON_DECAY;
+        if (EPSILON < EPSILON_STOP) {
+            EPSILON = EPSILON_STOP;
         }
     }
     outFile.close();
@@ -206,7 +247,7 @@ void MonteCarloMDP::runMonteCarlo(int episodes) {
              << " | S: " << state.status
              << " | G: " << state.growth
              << " | Y: " << state.yield
-             << " | R: " << farm.reward() << endl;
+             << " | R: " << get_reward(state) << endl;
         cout << "<Water> <Nitrogen> Input: " << action.first << " " << action.second << endl;
     }
 }
@@ -228,7 +269,7 @@ void MonteCarloMDP::run_with_policy() {
             << " | S: " << current_state->status
             << " | G: " << current_state->growth
             << " | Y: " << current_state->yield
-            << " | R: " << plant_farm.reward() << endl;
+            << " | R: " << get_reward(*current_state) << endl;
         cout << "<Water> <Nitrogen> Input: " << action.first << " " << action.second << endl;
 
         current_state->time = plant_farm.getTime();
