@@ -12,7 +12,7 @@
 
 using namespace std;
 
-MonteCarloMDP::MonteCarloMDP() : GAMMA(0.95), EPSILON(1.0), ALPHA(0.1), MAX_EPISODES(20000), EPSILON_DECAY(0.99), EPSILON_STOP(0.01) {
+MonteCarloMDP::MonteCarloMDP() : GAMMA(0.9), EPSILON(0.2), ALPHA(0.1), MAX_EPISODES(10000) {
     actions = {
         {0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4},
         {1, 0}, {1, 1}, {1, 2}, {1, 3}, {1, 4},
@@ -45,22 +45,17 @@ struct MonteCarloMDP::State* MonteCarloMDP::init_current_state(PlantFarm& plant_
 }
 
 int MonteCarloMDP::get_best_action(struct State& state) {
-    if ((rand() / double(RAND_MAX)) < EPSILON) {
-        // Exploration: Choose a random action
-        return rand() % actions.size();
-    } else {
-        // Exploitation: Choose the best action
-        int best_action_id = 0;
-        double best_action_value = -numeric_limits<double>::infinity();
+    int best_action_id = 0;
+    double best_action_value = -numeric_limits<double>::infinity();
 
-        for (int i = 0; i < actions.size(); i++) {
-            if (best_action_value < value_function[make_pair(state, actions[i])]) {
-                best_action_value = value_function[make_pair(state, actions[i])];
-                best_action_id = i;
-            }
+    for (int i = 0; i < actions.size(); i++) {
+        if (best_action_value < value_function[make_pair(state, actions[i])]) {
+            best_action_value = value_function[make_pair(state, actions[i])];
+            best_action_id = i;
         }
-        return best_action_id;
     }
+
+    return best_action_id;
 }
 
 double MonteCarloMDP::qvalue(PlantFarm& plant_farm, struct State& S, Action& A) {
@@ -141,15 +136,6 @@ void MonteCarloMDP::runEpisode() {
         current_state.status = farm.getStatus();
         current_state.growth = farm.getGrowth();
         current_state.yield = farm.getYield();
-
-        // Additional logging
-        cout << "Episode: Action taken: (" << action.first << ", " << action.second << "), "
-             << "State: Time=" << current_state.time
-             << ", Water=" << current_state.water
-             << ", Nitro=" << current_state.nitro
-             << ", Status=" << current_state.status
-             << ", Growth=" << current_state.growth
-             << ", Yield=" << current_state.yield << endl;
     }
 
     double G = 0.0;
@@ -228,20 +214,21 @@ void MonteCarloMDP::runMonteCarlo(int episodes) {
                     << " | Reward: " << get_reward(state) << endl;
         }
 
-        // Decay EPSILON
-        EPSILON *= EPSILON_DECAY;
-        if (EPSILON < EPSILON_STOP) {
-            EPSILON = EPSILON_STOP;
-        }
+        // Update epsilon
+        EPSILON = max(EPSILON * EPSILON_DECAY, EPSILON_STOP);
     }
     outFile.close();
 
     // Print the best episode
+    printBestEpisode(best_episode);
+}
+
+void MonteCarloMDP::printBestEpisode(const vector<pair<State, Action>>& best_episode) {
     for (const auto& step : best_episode) {
         const State& state = step.first;
         const Action& action = step.second;
 
-        cout << "T: " << state.time
+        cout << "T: " << std::setw(2) << std::setfill('0') << state.time
              << " | W: " << state.water
              << " | N: " << state.nitro
              << " | S: " << state.status
@@ -263,13 +250,13 @@ void MonteCarloMDP::run_with_policy() {
 
         plant_farm.transition(action.first, action.second);
 
-        cout << "T: " << current_state->time
-            << " | W: " << current_state->water
-            << " | N: " << current_state->nitro
-            << " | S: " << current_state->status
-            << " | G: " << current_state->growth
-            << " | Y: " << current_state->yield
-            << " | R: " << get_reward(*current_state) << endl;
+        cout << "T: " << std::setw(2) << std::setfill('0') << current_state->time
+             << " | W: " << current_state->water
+             << " | N: " << current_state->nitro
+             << " | S: " << current_state->status
+             << " | G: " << current_state->growth
+             << " | Y: " << current_state->yield
+             << " | R: " << get_reward(*current_state) << endl;
         cout << "<Water> <Nitrogen> Input: " << action.first << " " << action.second << endl;
 
         current_state->time = plant_farm.getTime();

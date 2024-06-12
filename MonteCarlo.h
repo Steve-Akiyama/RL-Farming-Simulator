@@ -10,17 +10,15 @@ using namespace std;
 
 class MonteCarloMDP
 {
-    // Constants for the class
     const bool DEBUG = false;
 
-    double GAMMA;       // Discount factor (0 < x < 1)
-    double EPSILON;     // Greedy epsilon
-    double ALPHA;       // Learning rate
-    int MAX_EPISODES;   // Number of episodes for training
-    double EPSILON_DECAY; // Decay rate for epsilon
-    double EPSILON_STOP;  // Minimum epsilon value
+    double GAMMA;
+    double EPSILON;
+    double ALPHA;
+    int MAX_EPISODES;
+    double EPSILON_DECAY;
+    double EPSILON_STOP;
 
-    // State space
     struct State
     {
         int time;
@@ -44,7 +42,6 @@ class MonteCarloMDP
         }
     };
 
-    // Actions
     typedef pair<int, int> Action;
 
     vector<Action> actions;
@@ -52,37 +49,24 @@ class MonteCarloMDP
 
     float* probabilities;
 
-    // Value function (Q(s,a))
     map<pair<State, Action>, double> value_function;
-
-    // Policy
     map<State, Action> policy;
-
-    // Returns
     map<pair<State, Action>, vector<double>> returns;
 
-    PlantFarm farm;  // Declare farm as a member variable
+    PlantFarm farm;
 
 public:
-    MonteCarloMDP();           // Default constructor. Initializes values.
+    MonteCarloMDP();
 
     State* init_current_state(PlantFarm& plant_farm);
-
     void print_policy();
-
     int get_best_action(State& state);
-
     double qvalue(PlantFarm& plant_farm, State& state, Action& action);
-
-    int get_reward(const State& state); // Add get_reward function here
-
+    int get_reward(const State& state);
     void runEpisode();
-
     void runMonteCarlo(int episodes);
-
     void run_with_policy();
-
-    void printBestPolicy();
+    void printBestEpisode(const vector<pair<State, Action>>& best_episode);
 };
 
 #endif // MONTECARLO_H
