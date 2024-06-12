@@ -146,14 +146,23 @@ void Main::processInput()
     }
     case 6: // New case for REINFORCE
     {
-        cout << "Running REINFORCE..." << endl;
-        double alpha = 0.01;  // Set learning rate
-        double gamma = 0.99;  // Set discount factor
-        Reinforce reinforce(alpha, gamma);
-        reinforce.setDebug(false);  // Set debug mode if needed
-        int episodeCount = askForEpisodeCount(); // Asks for episode count
-        reinforce.run(episodeCount);
-        //reinforce.printPolicy();  // Print the policy after training
+        // Parameters for REINFORCE
+        double alpha = 0.01;  // Learning rate
+        double gamma = 0.99;  // Discount factor
+        int numActions = 25;  // Number of possible actions (5x5)
+
+        // Number of episodes to run
+        int episodes = 10000;
+
+        // Initialize the REINFORCE algorithm
+        Reinforce reinforce(alpha, gamma, numActions);
+
+        // Optionally enable debug mode
+        reinforce.setDebug(true);
+
+        // Run the REINFORCE algorithm
+        reinforce.run(episodes);
+
         break;
     }
     case 7:

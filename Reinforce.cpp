@@ -4,14 +4,24 @@
 #include <numeric>
 #include <vector>
 
-Reinforce::Reinforce(double alpha, double gamma) : alpha(alpha), gamma(gamma), debugMode(false), distribution(0.0, 1.0) {
-    theta = std::vector<double>(5, 0.0);  // Initialize policy parameters
+Reinforce::Reinforce(double alpha, double gamma, int numActions) 
+    : alpha(alpha), gamma(gamma), debugMode(false), distribution(0.0, 1.0) {
+    theta = std::vector<double>(numActions, 0.0);  // Initialize policy parameters
     std::random_device rd;
     generator = std::default_random_engine(rd());
+
+    // Initialize possible actions
+    actions = {
+        {0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4},
+        {1, 0}, {1, 1}, {1, 2}, {1, 3}, {1, 4},
+        {2, 0}, {2, 1}, {2, 2}, {2, 3}, {2, 4},
+        {3, 0}, {3, 1}, {3, 2}, {3, 3}, {3, 4},
+        {4, 0}, {4, 1}, {4, 2}, {4, 3}, {4, 4}
+    };
 }
 
 void Reinforce::run(int episodes) {
-    std::vector<double> averageRewards;  // Declare averageRewards
+    std::vector<double> averageRewards;
 
     for (int episode = 0; episode < episodes; ++episode) {
         PlantFarm env;
@@ -24,11 +34,8 @@ void Reinforce::run(int episodes) {
             int action = selectAction(env);
             actions.push_back(action);
             states.push_back(env);
-            done = env.transition(action, action);  // Simplification: same action for water and nitrogen
+            done = env.transition(this->actions[action].first, this->actions[action].second);
             rewards.push_back(env.reward());
-            if (debugMode) {
-                std::cout << "Episode " << episode << " Time " << env.getTime() << " Action: " << action << " Reward: " << rewards.back() << std::endl;
-            }
         }
 
         updatePolicy(actions, rewards, states);
@@ -37,7 +44,7 @@ void Reinforce::run(int episodes) {
         averageRewards.push_back(totalReward / rewards.size());
     }
 
-    printAverageRewards(averageRewards);  // Print the average rewards after training
+    printAverageRewards(averageRewards);
 }
 
 void Reinforce::setDebug(bool debugMode) {
@@ -45,43 +52,44 @@ void Reinforce::setDebug(bool debugMode) {
 }
 
 double Reinforce::policy(int action, const PlantFarm& env) {
-    // Softmax policy calculation
     double sum_exp = 0.0;
-    for (int i = 0; i < theta.size(); ++i) {
-        sum_exp += std::exp(theta[i]);
+    for (double theta_val : theta) {
+        sum_exp += std::exp(theta_val);
     }
     return std::exp(theta[action]) / sum_exp;
 }
 
 int Reinforce::selectAction(const PlantFarm& env) {
-    std::vector<double> probabilities(5);
-    for (int i = 0; i < 5; ++i) {
+    std::vector<double> probabilities(actions.size());
+    for (int i = 0; i < actions.size(); ++i) {
         probabilities[i] = policy(i, env);
     }
 
     double random_value = distribution(generator);
     double cumulative_probability = 0.0;
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < actions.size(); ++i) {
         cumulative_probability += probabilities[i];
         if (random_value <= cumulative_probability) {
             return i;
         }
     }
-    return 4;  // Return the last action if none selected
+    return actions.size() - 1;  // Return the last action if none selected
 }
 
 void Reinforce::updatePolicy(const std::vector<int>& actions, const std::vector<int>& rewards, const std::vector<PlantFarm>& states) {
     for (size_t t = 0; t < actions.size(); ++t) {
-        double G = 0.0;
-        for (size_t k = t; k < rewards.size(); ++k) {
-            G += std::pow(gamma, k - t) * rewards[k];
-        }
+        double G = computeReturn(rewards, t);
         double policy_prob = policy(actions[t], states[t]);
-        theta[actions[t]] += alpha * std::pow(gamma, t) * G * (1 - policy_prob);
-        if (debugMode) {
-            std::cout << "Episode " << t << " Action: " << actions[t] << " Reward: " << rewards[t] << " G: " << G << " Theta: " << theta[actions[t]] << std::endl;
-        }
+        theta[actions[t]] += alpha * G * (1 - policy_prob); // Policy gradient update
     }
+}
+
+double Reinforce::computeReturn(const std::vector<int>& rewards, size_t t) {
+    double G = 0.0;
+    for (size_t k = t; k < rewards.size(); ++k) {
+        G += std::pow(gamma, k - t) * rewards[k];
+    }
+    return G;
 }
 
 void Reinforce::printAverageRewards(const std::vector<double>& averageRewards) {
