@@ -76,8 +76,6 @@ public:
 
     void print_policy();
 
-    // int get_best_action(State& state);
-
     double qvalue(PlantFarm &plant_farm, State &S, int A_id);
 
     void VI();
