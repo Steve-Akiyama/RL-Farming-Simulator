@@ -177,21 +177,21 @@ double MonteCarloMDP::qvalue(PlantFarm& plant_farm, struct State& S, struct Acti
  */
 void MonteCarloMDP::runEpisode() {
     vector<pair<State, Action> > episode;
-    State current_state = *init_current_state(farm);
+    State* current_state = init_current_state(farm);
 
     while (farm.getTime() < 10) {  // Use a constant value as a substitute for TIME_FINAL
-        int actionIdx = get_best_action(current_state);
+        int actionIdx = get_best_action(*current_state);
         Action action = actions[actionIdx];
 
         double reward = performAction(action);
-        episode.push_back(make_pair(current_state, action));
+        episode.push_back(make_pair(*current_state, action));
 
-        current_state.time = farm.getTime();
-        current_state.water = farm.getWater();
-        current_state.nitro = farm.getNitro();
-        current_state.status = farm.getStatus();
-        current_state.growth = farm.getGrowth();
-        current_state.yield = farm.getYield();
+        current_state->time = farm.getTime();
+        current_state->water = farm.getWater();
+        current_state->nitro = farm.getNitro();
+        current_state->status = farm.getStatus();
+        current_state->growth = farm.getGrowth();
+        current_state->yield = farm.getYield();
     }
 
     double G = 0.0;
@@ -226,6 +226,7 @@ void MonteCarloMDP::runMonteCarlo(int iterations) {
         runEpisode();
     }
     outputQValues("output.dat");
+    printQValues(); // Print the Q-values to the console as well
 }
 
 /**
@@ -235,37 +236,30 @@ void MonteCarloMDP::runMonteCarlo(int iterations) {
 void MonteCarloMDP::run_with_policy() {
     PlantFarm plant_farm;
     plant_farm.reset();
-    State current_state = *init_current_state(plant_farm);
+    State* current_state = init_current_state(plant_farm);
 
     while (plant_farm.getTime() < 10) {  // Use a constant value as a substitute for TIME_FINAL
-        int actionIdx = get_best_action(current_state);
+        int actionIdx = get_best_action(*current_state);
         Action action = actions[actionIdx];
 
         plant_farm.transition(action.waterInput, action.nitroInput);
 
-        current_state.time = plant_farm.getTime();
-        current_state.water = plant_farm.getWater();
-        current_state.nitro = plant_farm.getNitro();
-        current_state.status = plant_farm.getStatus();
-        current_state.growth = plant_farm.getGrowth();
-        current_state.yield = plant_farm.getYield();
+        current_state->time = plant_farm.getTime();
+        current_state->water = plant_farm.getWater();
+        current_state->nitro = plant_farm.getNitro();
+        current_state->status = plant_farm.getStatus();
+        current_state->growth = plant_farm.getGrowth();
+        current_state->yield = plant_farm.getYield();
 
-        cout << "State: (time: " << current_state.time
-            << ", water: " << current_state.water
-            << ", nitrogen: " << current_state.nitro
-            << ", status: " << current_state.status
-            << ", growth: " << current_state.growth
-            << ", yield: " << current_state.yield << ") Action: ("
-            << action.waterInput << ", " << action.nitroInput << ")" << endl;
+        cout << "Time: " << current_state->time
+            << " | Water: " << current_state->water
+            << " | Nitrogen: " << current_state->nitro
+            << " | Status: " << current_state->status
+            << " | Growth: " << current_state->growth
+            << " | Yield: " << current_state->yield
+            << " | Action: (" << action.waterInput << ", " << action.nitroInput << ")" 
+            << " | Reward: " << plant_farm.reward() << endl;
     }
-}
-
-/**
- * getReward()
- * Get the reward for the given state and action
- */
-double MonteCarloMDP::getReward(const State& state, const Action& action) {
-    return farm.reward();
 }
 
 /**
@@ -279,15 +273,16 @@ void MonteCarloMDP::outputQValues(const string& filename) {
             const State& state = it->first.first;
             const Action& action = it->first.second;
             double value = it->second;
-            outFile << "State: (time: " << state.time
-                    << ", water: " << state.water
-                    << ", nitrogen: " << state.nitro
-                    << ", status: " << state.status
-                    << ", growth: " << state.growth
-                    << ", yield: " << state.yield << ") "
-                    << "Action: (water: " << action.waterInput
-                    << ", nitrogen: " << action.nitroInput << ") "
-                    << "Q-value: " << value << endl;
+            outFile << "Time: " << state.time
+                    << " | Water: " << state.water
+                    << " | Nitrogen: " << state.nitro
+                    << " | Status: " << state.status
+                    << " | Growth: " << state.growth
+                    << " | Yield: " << state.yield
+                    << " | Action: (water: " << action.waterInput
+                    << ", nitrogen: " << action.nitroInput << ")"
+                    << " | Q-value: " << value
+                    << " | Reward: " << farm.reward() << endl;
         }
         outFile.close();
     } else {
@@ -305,14 +300,15 @@ void MonteCarloMDP::printQValues() {
         const Action& action = entry.first.second;
         double value = entry.second;
 
-        cout << "State: (time: " << state.time
-             << ", water: " << state.water
-             << ", nitrogen: " << state.nitro
-             << ", status: " << state.status
-             << ", growth: " << state.growth
-             << ", yield: " << state.yield << ") "
-             << "Action: (water: " << action.waterInput
-             << ", nitrogen: " << action.nitroInput << ") "
-             << "Q-value: " << value << endl;
+        cout << "Time: " << state.time
+             << " | Water: " << state.water
+             << " | Nitrogen: " << state.nitro
+             << " | Status: " << state.status
+             << " | Growth: " << state.growth
+             << " | Yield: " << state.yield
+             << " | Action: (water: " << action.waterInput
+             << ", nitrogen: " << action.nitroInput << ")"
+             << " | Q-value: " << value
+             << " | Reward: " << farm.reward() << endl;
     }
 }
