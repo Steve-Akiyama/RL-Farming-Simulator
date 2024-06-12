@@ -113,9 +113,36 @@ void Main::processInput()
     }
     case 3:
     {
+        cout << "Running Value Iteration..." << endl;
         ValueIteration valueiter;
-        std::cout << "Running Value Iteration..." << endl;
+        clock_t time_elapsed = valueiter.run(); // Run value iteration
+        double time_elapsed_seconds = (double)(time_elapsed) / 1000000;
 
+        if (time_elapsed_seconds < 60.0)
+        {
+            cout << fixed << setprecision(6)
+                 << "Time Elapsed: " << time_elapsed_seconds << " seconds" << endl;
+        }
+        else if (time_elapsed_seconds < 3600.0)
+        {
+            time_elapsed_seconds = time_elapsed_seconds - (double)(((int)(time_elapsed_seconds / 60)) * 60);
+            int time_elapsed_minutes = (int)(time_elapsed_seconds / 60.0);
+
+            cout << fixed << setprecision(6)
+                 << "Time Elapsed: " << time_elapsed_minutes << " minutes, "
+                 << time_elapsed_seconds << " seconds" << endl;
+        }
+        else
+        {
+            int time_elapsed_hours = (int)(time_elapsed_seconds / 3600.0);
+            int time_elapsed_minutes = (int)((int)(time_elapsed_seconds / 60.0) - (time_elapsed_hours * 60));
+            time_elapsed_seconds = time_elapsed_seconds - (double)(time_elapsed_minutes * 60);
+
+            cout << fixed << setprecision(6)
+                 << "Time Elapsed: " << time_elapsed_hours << " hours, "
+                 << time_elapsed_minutes << " minutes, "
+                 << time_elapsed_seconds << " seconds" << endl;
+        }
         break;
     }
     case 4:
