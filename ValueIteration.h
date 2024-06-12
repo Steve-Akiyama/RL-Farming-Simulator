@@ -16,8 +16,8 @@ class ValueIteration
      */
     const bool DEBUG = false;        // Set to true to enable debug messages
 
-    const double GAMMA = 0.90;      // Discount factor (0 < x < 1)
-    const double EPSILON = 20;
+    const double GAMMA = 0.70;       // Discount factor (0 < x < 1)
+    const double EPSILON = 0.1;
 
     int MAX_TRIALS = 1;
 
@@ -32,6 +32,15 @@ class ValueIteration
         int yield;  //[0, 2] where 0 is no yield and 2 is max yield. Yield > 0 requires a fully grown plant, and max yield requires max status.
 
         // Adapted from https://stackoverflow.com/questions/3882467/defining-operator-for-a-struct
+        bool operator==(const State& state) const {
+            return time == state.time && 
+                water == state.water && 
+                nitro == state.nitro &&
+                status == state.status && 
+                growth == state.growth && 
+                yield == state.yield;
+        }
+        
         bool operator<(const State& state) const {
             return tie(time, water, nitro, status, growth, yield) < tie(state.time, state.water, state.nitro, state.status, state.growth, state.yield);
         }
@@ -47,25 +56,29 @@ class ValueIteration
     float* probabilities;       // Transition % chances
 
     // Value function (V(s,a))
-    map<pair<State, Action>, double> value_function; // the double is the V of that s,a pair
+    map<State, double> value_function; // the double is the V of that s,a pair
 
     // Policy 
     map<State, Action> policy;  // List of mapped state, action pairs
+
+    // Rewards over trials
+    int* rewards_data;
+    double* max_residual_data;
 
 public:
     ValueIteration();           // Default constructor. Initializes values.
 
     State* init_current_state(PlantFarm& plant_farm);
 
-    void print_value_function(State& state);
+    void print_state_info(State& state);
 
     void print_policy();
 
-    int get_best_action(State& state);
+    // int get_best_action(State& state);
 
-    double qvalue(PlantFarm& plant_farm, State& state, Action& action);
+    double qvalue(PlantFarm& plant_farm, State& S, int A_id);
 
-    void VI();
+void VI();
 
     void run_with_policy();
 
