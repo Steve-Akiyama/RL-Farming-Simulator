@@ -29,6 +29,10 @@ class MonteCarloMDP
         bool operator<(const State& state) const {
             return tie(time, water, nitro, status, growth, yield) < tie(state.time, state.water, state.nitro, state.status, state.growth, state.yield);
         }
+
+        bool operator==(const State& state) const {
+            return tie(time, water, nitro, status, growth, yield) == tie(state.time, state.water, state.nitro, state.status, state.growth, state.yield);
+        }
     };
 
     struct Action 
@@ -39,6 +43,10 @@ class MonteCarloMDP
         bool operator<(const Action &other) const {
             if (waterInput != other.waterInput) return waterInput < other.waterInput;
             return nitroInput < other.nitroInput;
+        }
+
+        bool operator==(const Action &other) const {
+            return waterInput == other.waterInput && nitroInput == other.nitroInput;
         }
     };
 
@@ -52,6 +60,7 @@ class MonteCarloMDP
 
     // Policy 
     map<State, Action> policy;  // List of mapped state, action pairs
+    
     PlantFarm farm; // Instance of the plant farm problem
 
     double getReward(const State& state, const Action& action);
@@ -69,6 +78,7 @@ public:
     void run_with_policy();
     void print_policy();
     void outputQValues(const string& filename);
+    void print_value_function(State& state);
 };
 
 #endif // MONTECARLO_H

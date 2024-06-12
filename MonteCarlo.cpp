@@ -165,7 +165,7 @@ double MonteCarloMDP::qvalue(PlantFarm& plant_farm, struct State& S, struct Acti
     }
 
     Q *= discountFactor; // Current equation: gamma * sum(T(s,a,s') * V(s'))
-    Q += getReward(S, A); // Current equation: R(s) + gamma * sum(T(s,a,s') * V(s'))
+    Q += plant_farm.reward(); // Current equation: R(s) + gamma * sum(T(s,a,s') * V(s'))
 
     return Q;
 }
@@ -197,7 +197,7 @@ void MonteCarloMDP::runEpisode() {
     for (vector<pair<State, Action> >::reverse_iterator it = episode.rbegin(); it != episode.rend(); ++it) {
         const State& state = it->first;
         const Action& action = it->second;
-        G = 0.0 + discountFactor * G;  // Fix the use of reward
+        G = farm.reward() + discountFactor * G;  // Fix the use of reward
 
         pair<State, Action> stateActionPair = make_pair(state, action);
         if (find(episode.begin(), it.base(), stateActionPair) == it.base()) {
@@ -212,7 +212,7 @@ void MonteCarloMDP::runEpisode() {
  */
 double MonteCarloMDP::performAction(const Action& action) {
     farm.transition(action.waterInput, action.nitroInput);
-    return getReward(State{ farm.getTime(), farm.getWater(), farm.getNitro(), farm.getStatus(), farm.getGrowth(), farm.getYield() }, action);
+    return farm.reward();
 }
 
 /**
@@ -264,17 +264,7 @@ void MonteCarloMDP::run_with_policy() {
  * Get the reward for the given state and action
  */
 double MonteCarloMDP::getReward(const State& state, const Action& action) {
-    // Implement reward logic
-    int plantStatus = state.status;
-    int plantGrowth = state.growth;
-    int cropYield = state.yield;
-
-    double reward = 0.0;
-    if (plantStatus == 4 || plantStatus == 5) reward += plantStatus;
-    if (plantStatus == 1) reward -= 100;
-    reward += plantGrowth;
-    reward += cropYield * 4;
-    return reward;
+    return farm.reward();
 }
 
 /**

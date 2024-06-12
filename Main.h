@@ -1,18 +1,12 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "TerminalUI.h"
 #include "MonteCarlo.h"
-#include "ValueIteration.h"
 #include <iostream>
-#include <vector>
-#include <fstream>
-#include <cstdio>
-#include <string>
 #include <limits>
+#include <string>
 
 class Main {
-
     MonteCarloMDP method;
 
 public:
