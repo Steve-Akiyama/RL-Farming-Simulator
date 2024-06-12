@@ -50,7 +50,6 @@ int Main::askForEpisodeCount() {
     string str_choice;
     cin >> str_choice;
 
-    // Convert string to integer
     int choice = 0;
     try {
         choice = std::stoi(str_choice);
@@ -60,28 +59,22 @@ int Main::askForEpisodeCount() {
         std::cout << "Input out of range! Please enter a smaller number." << endl;
     }
 
-    // Clear input buffer
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-    // Print separator
     std::cout << "--------------------" << endl << endl;
 
     return choice;
 }
 
 void Main::processInput() {
-    // Take user input
     char str_choice;
     cin >> str_choice;
-    int choice = str_choice - '0'; // Input is converted from char to int
+    int choice = str_choice - '0';
 
-    // Clear input buffer
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-    // Print separator
     std::cout << "--------------------" << endl << endl;
 
-    // Handles choice inputs for terminal UI, exit, error handling
     switch (choice) {
         case 1: {
             PlantFarm plantfarm;
@@ -105,17 +98,16 @@ void Main::processInput() {
             break;
         }
         case 3: {
-            // ValueIteration valueiter;
             std::cout << "Running Value Iteration..." << endl;
+            // ValueIteration valueiter;
             // valueiter.run();
             break;
         }
         case 4: {
-            MonteCarloMDP montecarlo;
-            int episodes = askForEpisodeCount();
-            montecarlo.runMonteCarlo(episodes);
-            montecarlo.printQValues();
             std::cout << "Running Every Visit Monte Carlo..." << endl;
+            MonteCarloMDP montecarlo;
+            montecarlo.runMonteCarlo(10000); // Train for 10,000 episodes
+            montecarlo.printBestPolicy(); // Print the best policy found
             break;
         }
         case 5: {

@@ -1,84 +1,83 @@
 #ifndef MONTECARLO_H
 #define MONTECARLO_H
 
-#include "PlantFarm.h"
 #include <iostream>
 #include <vector>
 #include <map>
-#include <algorithm>
-#include <ctime>
-#include <utility>  // for std::pair and std::make_pair
-#include <tuple>  // for std::tie
+#include "PlantFarm.h"
 
 using namespace std;
 
-class MonteCarloMDP 
+class MonteCarloMDP
 {
-    double discountFactor;
-    double learningRate;
+    // Constants for the class
+    const bool DEBUG = false;
 
-    struct State 
+    double GAMMA;       // Discount factor (0 < x < 1)
+    double EPSILON;     // Greedy epsilon
+    int MAX_EPISODES;   // Number of episodes for training
+
+    // State space
+    struct State
     {
-        int time;   //[0, 10] where 0 is the starting value and 10 is the end of the simulation
-        int water;  //[0, WATER_MAX]
-        int nitro;  //[0, NITRO_MAX]
-        int status; //[0, 5] where 1 is heavy plant decay and 5 is plant flourishing. Growth requires a status of 4 or 5, decay requires a status of 1 or 2.
-        int growth; //[0, 4] where 0 is a seedling and 4 is fully grown.
-        int yield;  //[0, 2] where 0 is no yield and 2 is max yield. Yield > 0 requires a fully grown plant, and max yield requires max status.
+        int time;
+        int water;
+        int nitro;
+        int status;
+        int growth;
+        int yield;
 
+        bool operator==(const State& state) const {
+            return time == state.time && 
+                water == state.water && 
+                nitro == state.nitro &&
+                status == state.status && 
+                growth == state.growth && 
+                yield == state.yield;
+        }
+        
         bool operator<(const State& state) const {
             return tie(time, water, nitro, status, growth, yield) < tie(state.time, state.water, state.nitro, state.status, state.growth, state.yield);
         }
-
-        bool operator==(const State& state) const {
-            return tie(time, water, nitro, status, growth, yield) == tie(state.time, state.water, state.nitro, state.status, state.growth, state.yield);
-        }
     };
 
-    struct Action 
-    {
-        int waterInput;
-        int nitroInput;
+    // Actions
+    typedef pair<int, int> Action;
 
-        bool operator<(const Action &other) const {
-            if (waterInput != other.waterInput) return waterInput < other.waterInput;
-            return nitroInput < other.nitroInput;
-        }
-
-        bool operator==(const Action &other) const {
-            return waterInput == other.waterInput && nitroInput == other.nitroInput;
-        }
-    };
-
-    vector<Action> actions;     // Action space
+    vector<Action> actions;
     Action best_action;
 
-    float* probabilities;       // Transition % chances
+    float* probabilities;
 
-    // Value function (V(s,a))
-    map<pair<State, Action>, double> value_function; // the double is the V of that s,a pair
+    // Value function (Q(s,a))
+    map<pair<State, Action>, double> value_function;
 
-    // Policy 
-    map<State, Action> policy;  // List of mapped state, action pairs
-    
-    PlantFarm farm; // Instance of the plant farm problem
+    // Policy
+    map<State, Action> policy;
 
-    double getReward(const State& state, const Action& action);
+    // Returns
+    map<pair<State, Action>, vector<double>> returns;
+
+    PlantFarm farm;  // Declare farm as a member variable
 
 public:
-    MonteCarloMDP();
-    void runEpisode();
+    MonteCarloMDP();           // Default constructor. Initializes values.
+
     State* init_current_state(PlantFarm& plant_farm);
-    int get_best_action(State& state);
-    double performAction(const Action& action);
-    void updateQValues();
-    double qvalue(PlantFarm& plant_farm, State& state, Action& action);
-    void runMonteCarlo(int iterations);
-    void printQValues();
-    void run_with_policy();
+
     void print_policy();
-    void outputQValues(const string& filename);
-    void print_value_function(State& state);
+
+    int get_best_action(State& state);
+
+    double qvalue(PlantFarm& plant_farm, State& state, Action& action);
+
+    void runEpisode();
+
+    void runMonteCarlo(int episodes);
+
+    void run_with_policy();
+
+    void printBestPolicy();
 };
 
 #endif // MONTECARLO_H
