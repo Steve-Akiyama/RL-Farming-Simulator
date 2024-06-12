@@ -7,6 +7,7 @@
 #include <fstream>
 #include <utility>  // for std::pair
 #include <tuple>  // for std::tie
+#include <iterator> // for std::find
 
 using namespace std;
 
@@ -291,5 +292,27 @@ void MonteCarloMDP::outputQValues(const string& filename) {
         outFile.close();
     } else {
         cerr << "Unable to open file for writing" << endl;
+    }
+}
+
+/**
+ * printQValues()
+ * Print Q-values to console
+ */
+void MonteCarloMDP::printQValues() {
+    for (const auto& entry : value_function) {
+        const State& state = entry.first.first;
+        const Action& action = entry.first.second;
+        double value = entry.second;
+
+        cout << "State: (time: " << state.time
+             << ", water: " << state.water
+             << ", nitrogen: " << state.nitro
+             << ", status: " << state.status
+             << ", growth: " << state.growth
+             << ", yield: " << state.yield << ") "
+             << "Action: (water: " << action.waterInput
+             << ", nitrogen: " << action.nitroInput << ") "
+             << "Q-value: " << value << endl;
     }
 }
