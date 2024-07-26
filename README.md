@@ -6,8 +6,11 @@ Oregon State University
 
 Participants:
 Steven Akiyama - ActorCritic, PlantFarm, and TerminalUI implementation
+
 Greggory Hickman - Value Iteration and TerminalUI implementation
+
 Joseph Murche - MonteCarlo implementation
+
 Jamie Parker - REINFORCE implementation
 
 Compiling/Running code:
